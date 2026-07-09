@@ -3,16 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeluFest #1 - ปฐมบทกีฬาสีคอสเพลย์</title>
+    <title>FeluFest #1 - Activity Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center font-sans">
-    <div class="bg-white p-8 rounded-xl shadow-md text-center max-w-md w-full border-t-4 border-blue-600">
+    
+    <div id="mainCard" class="bg-white p-8 rounded-xl shadow-md text-center max-w-md w-full border-t-4 border-blue-600 transition-all">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">FeluFest #1</h1>
         <p class="text-gray-500 mb-6 text-sm">งานกีฬาสีคอสเพลย์ครั้งแรกที่คุณกำหนดเอง</p>
-        <button id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
-            ล็อกอินด้วย Google เพื่อจองตั๋ว
-        </button>
+        
+        <!-- ส่วนที่แสดงก่อนล็อกอิน -->
+        <div id="loginSection">
+            <button id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex justify-center items-center gap-2">
+                ล็อกอินด้วย Google
+            </button>
+        </div>
+
+        <!-- ส่วนที่แสดงหลังล็อกอินเสร็จ -->
+        <div id="profileSection" class="hidden">
+            <div class="mb-4">
+                <img id="userPic" src="" alt="Profile" class="w-20 h-20 rounded-full mx-auto border-2 border-gray-200">
+            </div>
+            <h2 id="userName" class="text-xl font-bold text-gray-800"></h2>
+            <p id="userEmail" class="text-gray-500 text-sm mb-4"></p>
+            
+            <div class="bg-gray-50 p-4 rounded-lg mb-4 text-left">
+                <p class="text-sm text-gray-600">สถานะบัตร: <span class="font-bold text-gray-800">ยังไม่มีบัตร</span></p>
+                <p class="text-sm text-gray-600">สีประจำตัว: <span class="font-bold text-gray-400">รอการสุ่ม</span></p>
+            </div>
+
+            <button id="logoutBtn" class="text-red-500 text-sm hover:underline">ออกจากระบบ</button>
+        </div>
     </div>
+
+    <!-- โค้ดระบบ Firebase -->
+    <script type="module">
+        // เรียกใช้คำสั่งของ Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // 🛑🛑 นำ firebaseConfig จากขั้นตอนที่ 1 มาวางทับตรงนี้ 🛑🛑
+       const firebaseConfig = {
+          apiKey: "AIzaSyB1_nTNwucSl37tTitbxTP18bSCK5iWlOI",
+          authDomain: "felufest-family.firebaseapp.com",
+          projectId: "felufest-family",
+          storageBucket: "felufest-family.firebasestorage.app",
+          messagingSenderId: "524842246260",
+          appId: "1:524842246260:web:d46534c7dcc27ccb757121",
+          measurementId: "G-447NGTJ7J2"
+        };
+
+        // เริ่มการทำงาน Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // ตัวแปรหน้าจอ
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginSection = document.getElementById('loginSection');
+        const profileSection = document.getElementById('profileSection');
+
+        // ฟังก์ชันล็อกอิน
+        loginBtn.addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                // บันทึกข้อมูลลงฐานข้อมูล (Firestore) 
+                const userRef = doc(db, 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+                
+                // ถ้าเพิ่งเคยล็อกอินครั้งแรก ให้สร้างโปรไฟล์ในฐานข้อมูล
+                if (!userSnap.exists()) {
+                    await setDoc(userRef, {
+                        uid: user.uid,
+                        name: user.displayName,
+                        email: user.email,
+                        ticket_type: 'none',
+                        payment_status: 'pending',
+                        team_color: 'none',
+                        discord_id: '',
+                        seat_number: '',
+                        parade_joined: false
+                    });
+                }
+            } catch (error) {
+                console.error("Login failed:", error);
+                alert("เกิดข้อผิดพลาดในการล็อกอิน");
+            }
+        });
+
+        // ฟังก์ชันออกจากระบบ
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // ตรวจสอบว่าล็อกอินอยู่หรือไม่ (เพื่อเปลี่ยนหน้าจอ)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // ล็อกอินแล้ว -> ซ่อนปุ่มล็อกอิน, โชว์โปรไฟล์
+                loginSection.classList.add('hidden');
+                profileSection.classList.remove('hidden');
+                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userPic').src = user.photoURL;
+            } else {
+                // ยังไม่ล็อกอิน -> โชว์ปุ่มล็อกอิน, ซ่อนโปรไฟล์
+                loginSection.classList.remove('hidden');
+                profileSection.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>

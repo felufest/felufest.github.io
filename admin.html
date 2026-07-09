@@ -6,21 +6,33 @@
     <title>Admin - จัดผังที่นั่ง FeluFest #1 (Interactive Map)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* กำหนดขนาดมาตรฐานให้เก้าอี้และบันไดเท่ากันเป๊ะ เพื่อไม่ให้ผังแหว่ง */
+        :root {
+            --cell-size: 24px;
+            --cell-gap: 4px;
+        }
+
+        .seat-container {
+            display: flex;
+            gap: var(--cell-gap);
+            position: relative;
+        }
+
         /* สไตล์พื้นฐานของเก้าอี้ */
         .seat {
-            width: 22px;
-            height: 22px;
+            width: var(--cell-size);
+            height: var(--cell-size);
             border-radius: 4px 4px 0 0;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid #cbd5e1;
-            font-size: 8px;
+            font-size: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: transparent; /* ซ่อนเลขไว้ โชว์ตอน Hover */
-            position: relative;
+            color: transparent;
+            box-sizing: border-box;
         }
         .seat:hover {
             transform: scale(1.2);
@@ -29,59 +41,69 @@
             z-index: 10;
         }
         
-        /* สไตล์ทางเดิน */
-        .stair { width: 15px; height: 22px; background: repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 8px); }
+        /* สไตล์ทางเดิน (ขนาดเท่าเก้าอี้เป๊ะ) */
+        .stair { 
+            width: var(--cell-size); 
+            height: var(--cell-size); 
+            background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.03) 4px, rgba(0,0,0,0.03) 8px); 
+            border: 1px dashed #e2e8f0;
+            box-sizing: border-box;
+        }
         
-        /* สไตล์โซนเวที */
+        /* สไตล์โซนเวที (ก้อนเดียว) */
         .stage-zone {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: #1e293b;
             color: white;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            letter-spacing: 2px;
+            /* ความกว้าง = เก้าอี้ 12 ตัว + ช่องว่าง 11 ช่อง */
+            width: calc((var(--cell-size) * 12) + (var(--cell-gap) * 11)); 
+            height: 100%;
+            border-left: 1px solid #334155;
+            border-right: 1px solid #334155;
         }
+        /* ลบขอบมนและเส้นขอบบน-ล่างออก เพื่อให้เวลาซ้อนกัน 6 แถวดูเป็นเนื้อเดียวกัน */
+        .stage-row-first { border-radius: 8px 8px 0 0; border-top: 1px solid #334155; }
+        .stage-row-last { border-radius: 0 0 8px 8px; border-bottom: 1px solid #334155; }
 
         /* สถานะต่างๆ ของเก้าอี้ */
         .seat.available { background-color: #f1f5f9; }
         .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; }
         .seat.blocked:hover { color: white; }
         
-        /* สีของแต่ละทีม และ บทบาทพิเศษ */
+        /* สีทีมและบทบาท */
         .seat.red { background-color: #ef4444; border-color: #b91c1c; color: white;}
         .seat.purple { background-color: #a855f7; border-color: #7e22ce; color: white;}
         .seat.blue { background-color: #3b82f6; border-color: #1d4ed8; color: white;}
         .seat.green { background-color: #22c55e; border-color: #15803d; color: white;}
-        .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; /* แขกรับเชิญเก้าอี้กลม */ }
+        .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; }
         .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; }
         
-        /* ทำให้แผนที่เลื่อนซ้ายขวาได้โดยไม่เสียทรง */
         .map-wrapper { min-width: max-content; }
     </style>
 </head>
 <body class="bg-gray-200 min-h-screen font-sans flex h-screen overflow-hidden">
 
-    <div class="flex-1 p-6 overflow-auto bg-gray-200 relative shadow-inner">
+    <div class="flex-1 p-6 overflow-auto bg-gray-200 relative shadow-inner flex justify-center">
         
-        <div class="bg-white p-8 rounded-xl shadow-lg inline-block map-wrapper mb-20">
+        <div class="bg-white p-8 rounded-xl shadow-lg inline-block map-wrapper mb-20 h-max">
             <h1 class="text-3xl font-bold mb-2 text-gray-800 text-center tracking-wide">FeluFest #1 Seating Map</h1>
-            <p class="text-center text-gray-500 mb-6 text-sm">อัฒจันทร์ฝั่ง Top (โซน A-E) และ ฝั่ง Bottom (โซน F-L)</p>
+            <p class="text-center text-gray-500 mb-6 text-sm">โซนบน (A-E) และ โซนล่าง (F-L)</p>
             
             <div class="mb-8 flex flex-wrap justify-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm">
                 <span class="flex items-center"><div class="w-4 h-4 bg-gray-100 border mr-2"></div> ว่าง</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2"></div> มุมอับ/สตาฟฟ์ (Blocked)</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-red-500 mr-2 rounded-sm"></div> สีแดง</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-purple-500 mr-2 rounded-sm"></div> สีม่วง</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-2 rounded-sm"></div> สีน้ำเงิน</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-green-500 mr-2 rounded-sm"></div> สีเขียว</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2"></div> บล็อก</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-red-500 mr-2 rounded-sm"></div> แดง</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-purple-500 mr-2 rounded-sm"></div> ม่วง</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-2 rounded-sm"></div> น้ำเงิน</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-green-500 mr-2 rounded-sm"></div> เขียว</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขกรับเชิญ</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2"></div> เชียร์ลีดเดอร์</span>
             </div>
 
-            <div id="stadium-map" class="flex flex-col gap-1 items-center bg-gray-100 p-8 rounded-2xl border border-gray-300">
+            <div id="stadium-map" class="flex flex-col gap-1 items-center bg-gray-100 p-8 rounded-2xl border border-gray-300 w-max mx-auto">
                 </div>
         </div>
     </div>
@@ -90,7 +112,7 @@
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">จัดการที่นั่ง</h2>
         
         <div id="seat-info" class="mb-6">
-            <p class="text-gray-500 text-sm mb-2">1. คลิกที่เก้าอี้บนผังเพื่อดูหรือแก้ไขข้อมูล</p>
+            <p class="text-gray-500 text-sm mb-2">1. คลิกที่เก้าอี้บนผังเพื่อแก้ไข</p>
             <div class="bg-blue-50 p-4 rounded-lg text-center border border-blue-200 shadow-inner">
                 <span class="text-xs text-blue-600 font-bold block uppercase tracking-wider">รหัสที่นั่ง (Seat ID)</span>
                 <span id="selected-seat-id" class="text-3xl font-black text-blue-800">-</span>
@@ -116,11 +138,10 @@
 
             <div>
                 <label class="text-sm font-bold text-gray-700 block mb-1">3. ผูกกับผู้ร่วมงาน (ค้นหาชื่อ):</label>
-                <input type="text" id="assigned-user" placeholder="ใส่ชื่อ, User ID หรือปล่อยว่าง..." class="border-2 border-gray-300 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
+                <input type="text" id="assigned-user" placeholder="ใส่ชื่อ..." class="border-2 border-gray-300 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
             </div>
 
             <button id="save-seat-btn" class="bg-blue-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                 บันทึกข้อมูล
             </button>
         </div>
@@ -130,7 +151,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🛑🛑 วาง firebaseConfig ของคุณตรงนี้ 🛑🛑
+        // 🛑🛑 ใส่ Config ของคุณ 🛑🛑
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -144,42 +165,35 @@
         const db = getFirestore(app);
         const mapContainer = document.getElementById('stadium-map');
 
-        // --- ตั้งค่าระบบชื่อ โซน และ แถว ---
         const topZoneNames = ['A', 'B', 'C', 'D', 'E'];
         const bottomZoneNames = ['F', 'G', 'H', 'STAGE', 'J', 'K', 'L'];
-        const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F']; // r1=A, r2=B... r6=F
+        const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F']; 
 
-        // เลย์เอาต์ ASCII จากที่คุณวาดมา
         const topZonesLayout = [
-            "**********|************|************|************|**********", // r6 (F)
-            "******--**|************|*****--*****|************|**--******", // r5 (E)
-            "******--**|************|*****--*****|************|**--******", // r4 (D)
-            "******--**|************|*****--*****|************|**--******", // r3 (C)
-            "******--**|************|*****--*****|************|**--******", // r2 (B)
-            "******--**|************|*****--*****|************|**--******"  // r1 (A)
+            "**********|************|************|************|**********", // F
+            "******--**|************|*****--*****|************|**--******", // E
+            "******--**|************|*****--*****|************|**--******", // D
+            "******--**|************|*****--*****|************|**--******", // C
+            "******--**|************|*****--*****|************|**--******", // B
+            "******--**|************|*****--*****|************|**--******"  // A
         ];
 
         const bottomZonesLayout = [
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // r1 (A)
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // r2 (B)
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // r3 (C)
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // r4 (D)
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // r5 (E)
-            "(*******)*****|************|************|<STAGE>|************|************|*****(*******)"  // r6 (F)
+            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // A
+            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // B
+            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // C
+            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // D
+            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)", // E
+            "(*******)*****|************|************|<STAGE>|************|************|*****(*******)"  // F
         ];
 
-        // --- ฟังก์ชันหลักในการวาดอัฒจันทร์ ---
         function renderStadiumSide(layoutArray, zoneNamesArray, isTopSide) {
             layoutArray.forEach((rowStr, index) => {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'flex gap-4 justify-center mb-1';
+                rowDiv.className = 'flex gap-4 justify-center mb-1 w-full';
                 
-                // หาชื่อแถว (Row)
-                // ถ้าฝั่ง Top: index 0 คือแถวบนสุด (F) -> index 5 คือแถว A
-                // ถ้าฝั่ง Bottom: index 0 คือแถวหน้าสุด (A) -> index 5 คือแถว F
                 const rowLetter = isTopSide ? rowLetters[5 - index] : rowLetters[index];
                 
-                // ใส่ป้ายบอกชื่อแถวด้านซ้าย
                 const rowLabelLeft = document.createElement('div');
                 rowLabelLeft.className = 'w-6 flex items-center justify-center font-bold text-gray-400 text-xs';
                 rowLabelLeft.innerText = rowLetter;
@@ -190,9 +204,8 @@
                 zones.forEach((zoneStr, zIdx) => {
                     const zoneName = zoneNamesArray[zIdx];
                     const zoneContainer = document.createElement('div');
-                    zoneContainer.className = 'flex gap-1 relative group';
+                    zoneContainer.className = 'seat-container group';
                     
-                    // ป้ายชื่อโซน (โชว์ตอนวางเมาส์)
                     const zoneBadge = document.createElement('div');
                     zoneBadge.className = 'absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-50';
                     zoneBadge.innerText = `Zone ${zoneName}`;
@@ -201,18 +214,15 @@
                     let seatNum = 1;
                     let isBlind = false;
 
-                    // กรณีเป็นเวที
                     if (zoneStr === '<STAGE>') {
                         const stageDiv = document.createElement('div');
-                        // เวทีจะมีความกว้างเท่ากับโซน 72 ที่นั่งโดยประมาณ
-                        stageDiv.className = 'stage-zone w-[310px] text-sm uppercase tracking-widest';
-                        if (index === 2) stageDiv.innerText = "S T A G E"; // ใส่คำแค่ตรงกลางเวที
+                        stageDiv.className = `stage-zone ${index === 0 ? 'stage-row-first' : ''} ${index === 5 ? 'stage-row-last' : ''}`;
+                        if (index === 2) stageDiv.innerHTML = "<span class='tracking-[0.3em]'>STAGE</span>";
                         zoneContainer.appendChild(stageDiv);
                         rowDiv.appendChild(zoneContainer);
-                        return; // ข้ามการสร้างเก้าอี้
+                        return; 
                     }
 
-                    // แกะสัญลักษณ์ทีละตัว
                     for (let i = 0; i < zoneStr.length; i++) {
                         const char = zoneStr[i];
 
@@ -224,18 +234,15 @@
                             stair.className = 'stair';
                             zoneContainer.appendChild(stair);
                         } else if (char === '*') {
-                            // จัดฟอร์แมตเลขที่นั่ง เช่น C-A05
                             const seatNumStr = seatNum.toString().padStart(2, '0');
                             const seatId = `${zoneName}-${rowLetter}${seatNumStr}`;
                             
                             const seat = document.createElement('div');
                             seat.id = seatId;
-                            seat.title = seatId; // ขึ้น Tooltip ตอนเอาเมาส์ชี้
-                            seat.innerText = seatNumStr; // โชว์เลขที่นั่ง
+                            seat.title = seatId; 
+                            seat.innerText = seatNumStr; 
                             
-                            // ถ้าเป็นที่นั่ง () ให้เซ็ตเป็นบล็อกอัตโนมัติแต่แรก
                             seat.className = `seat ${isBlind ? 'blocked' : 'available'}`;
-                            
                             seat.onclick = () => selectSeat(seatId);
                             zoneContainer.appendChild(seat);
                             seatNum++;
@@ -244,7 +251,6 @@
                     rowDiv.appendChild(zoneContainer);
                 });
 
-                // ใส่ป้ายบอกชื่อแถวด้านขวา
                 const rowLabelRight = document.createElement('div');
                 rowLabelRight.className = 'w-6 flex items-center justify-center font-bold text-gray-400 text-xs';
                 rowLabelRight.innerText = rowLetter;
@@ -254,24 +260,20 @@
             });
         }
 
-        // 1. วาดฝั่งโซนบน (Top Side)
         renderStadiumSide(topZonesLayout, topZoneNames, true);
 
-        // 2. วาดสนามบาส (Basketball Court)
+        // ปรับขนาดสนามบาสให้สมจริง (สัดส่วนประมาณ 2:1)
         const court = document.createElement('div');
-        court.className = 'w-11/12 h-32 bg-orange-100 border-4 border-orange-400 rounded flex flex-col justify-center items-center my-8 relative shadow-inner overflow-hidden';
+        court.className = 'w-[800px] aspect-[27/15] bg-orange-100 border-4 border-orange-400 rounded-lg flex flex-col justify-center items-center my-8 relative shadow-inner overflow-hidden flex-shrink-0';
         court.innerHTML = `
             <div class="absolute inset-0 flex justify-center"><div class="w-1 h-full bg-orange-400"></div></div>
-            <div class="absolute w-24 h-24 border-4 border-orange-400 rounded-full flex items-center justify-center"></div>
-            <span class="z-10 font-black text-orange-800 text-2xl tracking-[0.5em] opacity-50 uppercase bg-white/50 px-4 py-1 rounded">Basketball Court</span>
+            <div class="absolute w-32 h-32 border-4 border-orange-400 rounded-full flex items-center justify-center"></div>
+            <span class="z-10 font-black text-orange-800 text-2xl tracking-[0.5em] opacity-40 uppercase bg-white/70 px-6 py-2 rounded">Basketball Court</span>
         `;
         mapContainer.appendChild(court);
 
-        // 3. วาดฝั่งโซนล่าง (Bottom Side)
         renderStadiumSide(bottomZonesLayout, bottomZoneNames, false);
 
-
-        // --- ระบบคลิกและบันทึกข้อมูล (Interactive System) ---
         let currentSelectedSeat = null;
         
         function selectSeat(seatId) {
@@ -279,7 +281,6 @@
             document.getElementById('selected-seat-id').innerText = seatId;
             document.getElementById('seat-controls').classList.remove('hidden');
             
-            // อ่านค่าคลาส (สถานะ) ปัจจุบันของเก้าอี้เพื่อมาโชว์ในฟอร์ม
             const seatEl = document.getElementById(seatId);
             const statusSelect = document.getElementById('seat-status');
             
@@ -292,65 +293,46 @@
             else if(seatEl.classList.contains('cheer')) statusSelect.value = 'cheer';
             else statusSelect.value = 'available';
 
-            // TODO: ในอนาคตสามารถดึงชื่อ user จาก Firebase มาใส่ในช่อง input ได้ที่นี่
             document.getElementById('assigned-user').value = "";
         }
 
-        // ปุ่มเซฟการตั้งค่าที่นั่งลง Firebase
         document.getElementById('save-seat-btn').addEventListener('click', async () => {
             if(!currentSelectedSeat) return;
-            
             const btn = document.getElementById('save-seat-btn');
-            const originalText = btn.innerHTML;
             btn.innerHTML = 'กำลังบันทึก...';
-            btn.disabled = true;
 
             const status = document.getElementById('seat-status').value;
             const assignedUser = document.getElementById('assigned-user').value;
 
             try {
-                // เซฟข้อมูลลงฐานข้อมูล (Firestore) 
                 await setDoc(doc(db, "seats", currentSelectedSeat), {
                     status: status,
                     assigned_to: assignedUser,
                     updated_at: new Date()
                 });
-
-                // แสดง Effect กระพริบสีเขียวเมื่อเซฟเสร็จ
                 const seatEl = document.getElementById(currentSelectedSeat);
                 seatEl.style.boxShadow = "0 0 15px 5px rgba(34, 197, 94, 0.8)";
                 setTimeout(() => { seatEl.style.boxShadow = ""; }, 1000);
-
             } catch (error) {
-                console.error("Error saving seat:", error);
+                console.error(error);
                 alert("เกิดข้อผิดพลาดในการบันทึก");
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                btn.innerHTML = 'บันทึกข้อมูล';
             }
         });
 
-        // ดึงข้อมูล Realtime ทันทีที่มีคนเปิดหน้าเว็บ หรือมีการเซฟใหม่
         onSnapshot(collection(db, "seats"), (snapshot) => {
             snapshot.forEach((doc) => {
                 const seatData = doc.data();
                 const seatEl = document.getElementById(doc.id);
-                
                 if(seatEl) {
-                    // ล้างคลาสเก่าออกทั้งหมด
                     seatEl.className = 'seat';
-                    
-                    // ใส่คลาสใหม่
                     if(seatData.status) {
                         seatEl.classList.add(seatData.status);
                     } else {
                         seatEl.classList.add('available');
                     }
-                    
-                    // ถ้าถูกบล็อกอยู่แล้วตั้งแต่แรก (มุมอับ) ก็ให้เป็น blocked ไว้
-                    if (seatEl.innerText === "" && seatData.status !== "available") {
-                        // ป้องกันกรณีที่นั่งมุมอับโดนล้างคลาส
-                    }
+                    if (seatEl.innerText === "" && seatData.status !== "available") {}
                 }
             });
         });

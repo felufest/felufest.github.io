@@ -6,30 +6,27 @@
     <title>Admin - จัดผังที่นั่ง FeluFest #1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* สไตล์สำหรับเก้าอี้ */
         .seat {
-            width: 25px;
-            height: 25px;
-            border-radius: 4px 4px 0 0; /* ทำให้โค้งด้านบนเหมือนเก้าอี้ */
+            width: 22px;
+            height: 22px;
+            border-radius: 4px 4px 0 0;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid #cbd5e1;
-            font-size: 8px;
+            font-size: 7px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: transparent; /* ซ่อนตัวหนังสือไว้ก่อน */
+            color: transparent;
         }
-        .seat:hover { transform: scale(1.1); box-shadow: 0 0 5px rgba(0,0,0,0.3); color: white; }
+        .seat:hover:not(.stair):not(.stage) { transform: scale(1.2); box-shadow: 0 0 5px rgba(0,0,0,0.3); color: white; z-index: 10; }
         
-        /* สถานะต่างๆ ของเก้าอี้ */
         .seat.available { background-color: #f1f5f9; }
-        .seat.blocked { background-color: #475569; cursor: not-allowed; border-color: #334155; }
-        .seat.stage { background-color: #fbbf24; border-color: #f59e0b; width: 100%; grid-column: span 12; }
-        .seat.stair { background-color: transparent; border: none; cursor: default; }
+        .seat.blocked { background-color: #64748b; border-color: #475569; color: white; } /* () มุมอับ */
+        .seat.stage { background-color: #fbbf24; border: none; cursor: default; } /* <> เวที */
+        .seat.stair { background-color: transparent; border: none; cursor: default; } /* -- บันได */
         
-        /* สีของแต่ละทีม (เมื่อมีคนนั่ง) */
         .seat.red { background-color: #ef4444; border-color: #b91c1c; color: white;}
         .seat.purple { background-color: #a855f7; border-color: #7e22ce; color: white;}
         .seat.blue { background-color: #3b82f6; border-color: #1d4ed8; color: white;}
@@ -38,65 +35,60 @@
 </head>
 <body class="bg-gray-200 min-h-screen font-sans flex">
 
-    <!-- พื้นที่แสดงผังที่นั่ง (ซ้าย) -->
     <div class="flex-1 p-8 overflow-auto">
-        <div class="bg-white p-6 rounded-xl shadow-lg inline-block min-w-full">
-            <h1 class="text-2xl font-bold mb-4 text-gray-800 text-center">ผังที่นั่ง Interactive (Top View)</h1>
+        <div class="bg-white p-6 rounded-xl shadow-lg inline-block min-w-full min-h-full">
+            <h1 class="text-2xl font-bold mb-4 text-gray-800 text-center">ผังที่นั่ง FeluFest #1</h1>
             
-            <div class="mb-4 text-center text-sm flex justify-center gap-4">
+            <div class="mb-6 text-center text-sm flex justify-center gap-4 flex-wrap">
                 <span class="flex items-center"><div class="w-4 h-4 bg-gray-100 border mr-1"></div> ว่าง</span>
-                <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-1"></div> มุมอับ/สตาฟฟ์</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-slate-500 mr-1"></div> สตาฟฟ์/มุมอับ</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-yellow-400 mr-1"></div> เวที</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-red-500 mr-1"></div> แดง</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-purple-500 mr-1"></div> ม่วง</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-1"></div> น้ำเงิน</span>
                 <span class="flex items-center"><div class="w-4 h-4 bg-green-500 mr-1"></div> เขียว</span>
             </div>
 
-            <!-- คอนเทนเนอร์วาดผัง -->
-            <div id="stadium-map" class="flex flex-col gap-2 items-center bg-gray-50 p-8 rounded-lg border-2 border-dashed border-gray-300">
-                <!-- โค้ด JS จะวาดเก้าอี้ตรงนี้ -->
-            </div>
+            <div id="stadium-map" class="flex flex-col items-center bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 gap-1">
+                </div>
         </div>
     </div>
 
-    <!-- แผงควบคุม (ขวา) -->
-    <div class="w-80 bg-white shadow-2xl p-6 flex flex-col border-l border-gray-300 z-10">
+    <div class="w-80 bg-white shadow-2xl p-6 flex flex-col border-l border-gray-300 z-10 fixed right-0 top-0 h-full overflow-y-auto">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">จัดการที่นั่ง</h2>
         
         <div id="seat-info" class="mb-6">
-            <p class="text-gray-500 text-sm mb-2">คลิกที่เก้าอี้บนผังเพื่อดูหรือแก้ไขข้อมูล</p>
             <div class="bg-gray-100 p-4 rounded-lg text-center border">
-                <span class="text-xs text-gray-500 block">ที่นั่งที่เลือก</span>
-                <span id="selected-seat-id" class="text-2xl font-bold text-blue-600">-</span>
+                <span class="text-xs text-gray-500 block mb-1">รหัสที่นั่งที่เลือก</span>
+                <span id="selected-seat-id" class="text-xl font-bold text-blue-600">-</span>
             </div>
         </div>
 
-        <!-- ฟอร์มกำหนดที่นั่ง -->
         <div id="seat-controls" class="hidden flex-col gap-3">
-            <label class="text-sm font-bold text-gray-700">กำหนดสถานะ / สีทีม:</label>
+            <label class="text-sm font-bold text-gray-700">สถานะ / สีทีม:</label>
             <select id="seat-status" class="border p-2 rounded w-full bg-white">
                 <option value="available">ว่าง (Available)</option>
-                <option value="blocked">บล็อก / สตาฟฟ์ (Blocked)</option>
+                <option value="blocked">สตาฟฟ์ / มุมอับ (Blocked)</option>
                 <option value="red">ทีมสีแดง</option>
                 <option value="purple">ทีมสีม่วง</option>
                 <option value="blue">ทีมสีน้ำเงิน</option>
                 <option value="green">ทีมสีเขียว</option>
             </select>
 
-            <label class="text-sm font-bold text-gray-700 mt-2">กำหนดผู้ร่วมงาน (ค้นหาชื่อ):</label>
-            <input type="text" id="assigned-user" placeholder="ชื่อหรือ ID..." class="border p-2 rounded w-full">
+            <label class="text-sm font-bold text-gray-700 mt-2">ระบุชื่อ / ID ผู้ใช้งาน:</label>
+            <input type="text" id="assigned-user" placeholder="ใส่ชื่อหรือโน้ต (เช่น หลีด/VIP)..." class="border p-2 rounded w-full">
 
-            <button id="save-seat-btn" class="bg-blue-600 text-white font-bold py-2 rounded mt-4 hover:bg-blue-700 transition">
-                บันทึกการเปลี่ยนแปลง
+            <button id="save-seat-btn" class="bg-blue-600 text-white font-bold py-3 rounded mt-4 hover:bg-blue-700 transition">
+                บันทึกที่นั่งนี้
             </button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🛑🛑 นำ firebaseConfig ของคุณมาวางตรงนี้เหมือนไฟล์ index.html 🛑🛑
+        // 🛑🛑 วาง firebaseConfig ตรงนี้ 🛑🛑
         const firebaseConfig = {
             apiKey: "ใส่ของคุณ",
             authDomain: "ใส่ของคุณ",
@@ -105,69 +97,94 @@
             messagingSenderId: "ใส่ของคุณ",
             appId: "ใส่ของคุณ"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- ระบบสร้างผังที่นั่งอัตโนมัติ ---
         const mapContainer = document.getElementById('stadium-map');
-        
-        // จำลอง Layout อัฒจันทร์โซนบน (r6 ถึง r1)
-        // สัญลักษณ์: * = ที่นั่ง, - = ทางเดิน, b = บล็อก(มุมอับ/สตาฟฟ์)
+
+        // สัญลักษณ์: * = ว่าง, - = บันได, b = มุมอับ/สตาฟฟ์ (), x = เวที <>, | = แบ่งโซน (อัฒจันทร์)
         const topZoneLayout = [
-            "**********--************--************--************--**********", // r6
-            "******--**--************--*****--*****--************--**--******", // r5
-            "******--**--************--*****--*****--************--**--******", // r4
-            "******--**--************--*****--*****--************--**--******", // r3
-            "******--**--************--*****--*****--************--**--******", // r2
-            "******--**--************--*****--*****--************--**--******"  // r1
+            "**********|************|************|************|**********", // r6
+            "******--**|************|*****--*****|************|**--******", // r5
+            "******--**|************|*****--*****|************|**--******", // r4
+            "******--**|************|*****--*****|************|**--******", // r3
+            "******--**|************|*****--*****|************|**--******", // r2
+            "******--**|************|*****--*****|************|**--******"  // r1
         ];
 
-        // ฟังก์ชันวาดโซน
-        function renderZone(layoutArray, prefix) {
+        const bottomZoneLayout = [
+            "bbbbbbb*--**|************|******--****|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb", // r1
+            "bbbbbbb*--**|************|******--****|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb", // r2
+            "bbbbbbb*--**|************|******--****|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb", // r3
+            "bbbbbbb*--**|************|******--****|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb", // r4
+            "bbbbbbb*--**|************|******--****|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb", // r5
+            "bbbbbbb*****|************|************|xxxxxxxxxxxx|****--******|************|**--*bbbbbbb"  // r6
+        ];
+
+        function renderZone(layoutArray, prefix, reverseRow) {
             layoutArray.forEach((rowPattern, rowIndex) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'flex gap-1 justify-center';
                 
-                // กำหนดเลขแถว (r6, r5, ...) -> อาศัย index ย้อนกลับ
-                const rowNumber = 6 - rowIndex; 
-                
+                // คำนวณเลขแถว (โซนบน r6 ลงมา r1, โซนล่าง r1 ลงไป r6)
+                const rowNumber = reverseRow ? (6 - rowIndex) : (rowIndex + 1); 
+
                 for(let i = 0; i < rowPattern.length; i++) {
                     const char = rowPattern[i];
+                    
+                    if (char === '|') {
+                        // เส้นแบ่งโซน (ขยายช่องว่าง)
+                        const gap = document.createElement('div');
+                        gap.className = 'w-3'; 
+                        rowDiv.appendChild(gap);
+                        continue;
+                    }
+
                     const seatDiv = document.createElement('div');
+                    const seatId = `${prefix}-r${rowNumber}-c${i+1}`;
+                    seatDiv.id = seatId;
                     
                     if (char === '*') {
-                        const seatId = `${prefix}-r${rowNumber}-${i+1}`;
                         seatDiv.className = 'seat available';
-                        seatDiv.id = seatId;
-                        seatDiv.innerText = `R${rowNumber}`; // ซ่อนไว้โชว์ตอน hover
+                        seatDiv.innerText = `R${rowNumber}`;
                         seatDiv.onclick = () => selectSeat(seatId);
                     } else if (char === '-') {
                         seatDiv.className = 'seat stair';
                     } else if (char === 'b') {
-                        const seatId = `${prefix}-r${rowNumber}-${i+1}`;
                         seatDiv.className = 'seat blocked';
-                        seatDiv.id = seatId;
+                        seatDiv.innerText = 'b';
                         seatDiv.onclick = () => selectSeat(seatId);
+                    } else if (char === 'x') {
+                        seatDiv.className = 'seat stage';
                     }
+                    
                     rowDiv.appendChild(seatDiv);
                 }
                 mapContainer.appendChild(rowDiv);
             });
         }
 
-        // 1. วาดโซนบน
+        // 1. สร้างโซนบน
         const topLabel = document.createElement('div');
-        topLabel.className = 'font-bold text-gray-400 mt-4 mb-2';
-        topLabel.innerText = "--- โซนด้านบน (สีแดง / สีม่วง) ---";
+        topLabel.className = 'font-bold text-gray-500 mt-2 mb-1';
+        topLabel.innerText = "โซนด้านบน";
         mapContainer.appendChild(topLabel);
-        renderZone(topZoneLayout, 'top');
+        renderZone(topZoneLayout, 'top', true); // เรียง r6 -> r1
 
-        // 2. วาดสนาม
+        // 2. สร้างสนาม
         const field = document.createElement('div');
-        field.className = 'w-full h-16 bg-green-200 border-2 border-green-500 rounded-lg my-8 flex items-center justify-center text-green-700 font-bold tracking-widest';
-        field.innerText = "ส น า ม กี ฬ า";
+        field.className = 'w-11/12 h-32 bg-green-100 border-2 border-green-500 rounded-lg my-6 flex flex-col items-center justify-center text-green-700 font-bold tracking-widest relative';
+        field.innerHTML = `
+            <span class="text-xl">ส น า ม กี ฬ า</span>
+            <div class="absolute w-1 h-full bg-green-500"></div> <div class="absolute w-32 h-16 border-2 border-green-500 rounded-lg"></div> `;
         mapContainer.appendChild(field);
+
+        // 3. สร้างโซนล่าง
+        const bottomLabel = document.createElement('div');
+        bottomLabel.className = 'font-bold text-gray-500 mb-1';
+        bottomLabel.innerText = "โซนด้านล่าง (มีเวทีกลาง)";
+        mapContainer.appendChild(bottomLabel);
+        renderZone(bottomZoneLayout, 'bot', false); // เรียง r1 -> r6
 
         // --- ระบบคลิกและจัดการข้อมูล ---
         let currentSelectedSeat = null;
@@ -177,7 +194,6 @@
             document.getElementById('selected-seat-id').innerText = seatId;
             document.getElementById('seat-controls').classList.remove('hidden');
             
-            // ดึงข้อมูลเก่าจาก DOM (หรือจาก DB ในอนาคต) มาโชว์ที่ฟอร์ม
             const seatEl = document.getElementById(seatId);
             const statusSelect = document.getElementById('seat-status');
             
@@ -189,7 +205,6 @@
             else statusSelect.value = 'available';
         }
 
-        // ปุ่มเซฟการตั้งค่าที่นั่งลง Firebase
         document.getElementById('save-seat-btn').addEventListener('click', async () => {
             if(!currentSelectedSeat) return;
             
@@ -197,31 +212,28 @@
             const assignedUser = document.getElementById('assigned-user').value;
 
             try {
-                // บันทึกลง Firebase Collection 'seats'
                 await setDoc(doc(db, "seats", currentSelectedSeat), {
                     status: status,
                     assigned_to: assignedUser,
                     updated_at: new Date()
                 });
-
                 alert("อัปเดตที่นั่งเรียบร้อย!");
             } catch (error) {
-                console.error("Error saving seat:", error);
                 alert("เกิดข้อผิดพลาดในการบันทึก");
             }
         });
 
-        // โหลดข้อมูลที่นั่งทั้งหมดจาก Firebase แบบ Realtime
         onSnapshot(collection(db, "seats"), (snapshot) => {
             snapshot.forEach((doc) => {
                 const seatData = doc.data();
                 const seatEl = document.getElementById(doc.id);
                 
                 if(seatEl) {
-                    // รีเซ็ตคลาส
                     seatEl.className = 'seat';
-                    // ใส่คลาสใหม่ตามสถานะใน DB
-                    if(seatData.status) {
+                    // คงสภาพให้มุมอับ (b) และที่นั่งธรรมดา
+                    if (seatEl.innerText === 'b' && (!seatData.status || seatData.status === 'available')) {
+                         seatEl.classList.add('blocked');
+                    } else if(seatData.status) {
                         seatEl.classList.add(seatData.status);
                     } else {
                         seatEl.classList.add('available');
@@ -230,7 +242,6 @@
             });
         });
 
-        // ทำให้ selectSeat ใช้ใน HTML ได้
         window.selectSeat = selectSeat;
     </script>
 </body>

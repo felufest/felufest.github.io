@@ -93,7 +93,34 @@
         .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; box-shadow: inset 0 -3px 0 #9d174d; }
     </style>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 relative">
+
+    <div class="fixed bottom-8 left-8 z-[100] group">
+        <button class="bg-indigo-600 text-white shadow-xl shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+
+        <div class="absolute bottom-16 left-0 mb-4 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+            <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">สัญลักษณ์ที่นั่ง</h3>
+            
+            <div class="flex flex-col gap-3 text-sm font-semibold text-slate-600">
+                <div class="grid grid-cols-2 gap-3">
+                    <span class="flex items-center"><div class="w-4 h-4 bg-white border border-slate-300 mr-2 rounded"></div> ว่าง</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2 rounded"></div> บล็อก</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขกรับเชิญ</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2 rounded"></div> เชียร์ลีดเดอร์</span>
+                </div>
+                <div class="border-t border-slate-100 pt-3 mt-1 grid grid-cols-2 gap-3">
+                    <span class="flex items-center"><div class="w-3 h-3 bg-red-500 mr-2 rounded-sm shadow-sm"></div> สีแดง</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-purple-500 mr-2 rounded-sm shadow-sm"></div> สีม่วง</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-blue-500 mr-2 rounded-sm shadow-sm"></div> สีน้ำเงิน</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-green-500 mr-2 rounded-sm shadow-sm"></div> สีเขียว</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <main class="flex-1 h-full overflow-auto p-4 md:p-8 relative">
         <div class="min-w-max bg-white p-10 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
@@ -102,33 +129,13 @@
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2">FeluFest #1</h1>
                 <p class="text-slate-500 font-medium">Interactive Seating Map Dashboard</p>
             </div>
-            
-            <div class="mb-10 flex flex-col gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                <div class="flex flex-wrap justify-center gap-6 text-sm font-semibold text-slate-600">
-                    <div class="flex gap-4 items-center">
-                        <span class="flex items-center"><div class="w-4 h-4 bg-white border border-slate-300 mr-2 rounded"></div> ว่าง</span>
-                        <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2 rounded"></div> บล็อก</span>
-                    </div>
-                    <div class="w-px h-5 bg-slate-300 hidden md:block"></div>
-                    <div class="flex gap-4 items-center">
-                        <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขกรับเชิญ</span>
-                        <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2 rounded"></div> เชียร์ลีดเดอร์</span>
-                    </div>
-                </div>
-                <div class="flex flex-wrap justify-center gap-5 text-sm font-semibold text-slate-600 pt-3 border-t border-slate-200">
-                    <span class="flex items-center bg-white px-3 py-1 rounded-md shadow-sm border"><div class="w-3 h-3 bg-red-500 mr-2 rounded-sm"></div> สีแดง</span>
-                    <span class="flex items-center bg-white px-3 py-1 rounded-md shadow-sm border"><div class="w-3 h-3 bg-purple-500 mr-2 rounded-sm"></div> สีม่วง</span>
-                    <span class="flex items-center bg-white px-3 py-1 rounded-md shadow-sm border"><div class="w-3 h-3 bg-blue-500 mr-2 rounded-sm"></div> สีน้ำเงิน</span>
-                    <span class="flex items-center bg-white px-3 py-1 rounded-md shadow-sm border"><div class="w-3 h-3 bg-green-500 mr-2 rounded-sm"></div> สีเขียว</span>
-                </div>
-            </div>
 
             <div id="stadium-map" class="flex flex-col gap-1.5 items-center bg-slate-100 p-10 rounded-[2rem] border-2 border-slate-200">
                 </div>
         </div>
     </main>
 
-    <aside class="w-[380px] bg-white border-l border-slate-200 shadow-2xl flex-shrink-0 flex flex-col h-full z-20">
+    <aside class="w-[380px] bg-white border-l border-slate-200 shadow-2xl flex-shrink-0 flex flex-col h-full z-20 relative">
         <div class="p-6 border-b border-slate-100 bg-slate-50">
             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -233,10 +240,10 @@
                 zones.forEach((zoneStr, zIdx) => {
                     const zoneName = zoneNamesArray[zIdx];
                     const zoneContainer = document.createElement('div');
-                    zoneContainer.className = 'seat-container group';
+                    zoneContainer.className = 'seat-container group/zone';
                     
                     const zoneBadge = document.createElement('div');
-                    zoneBadge.className = 'absolute -top-7 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2.5 py-1 rounded shadow-lg hidden group-hover:block whitespace-nowrap z-50';
+                    zoneBadge.className = 'absolute -top-7 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2.5 py-1 rounded shadow-lg hidden group-hover/zone:block whitespace-nowrap z-50';
                     zoneBadge.innerText = `Zone ${zoneName}`;
                     
                     const triangle = document.createElement('div');
@@ -295,13 +302,13 @@
 
         renderStadiumSide(topZonesLayout, topZoneNames, true);
 
-        // สนามกีฬาอเนกประสงค์ (ความกว้างคำนวณให้พอดีกับโซน Top คือ 1660px โดยประมาณ)
+        // แก้ไข: สนามกีฬาอเนกประสงค์ ปรับความสูงให้กว้างขึ้นเป็น h-64 (256px) และวงกลมใหญ่ขึ้น
         const court = document.createElement('div');
-        court.className = 'w-[1660px] h-32 bg-emerald-50 border-[3px] border-emerald-400/50 rounded flex flex-col justify-center items-center my-10 relative shadow-inner overflow-hidden flex-shrink-0';
+        court.className = 'w-[1660px] h-64 bg-emerald-50 border-[3px] border-emerald-400/50 rounded-2xl flex flex-col justify-center items-center my-10 relative shadow-inner overflow-hidden flex-shrink-0';
         court.innerHTML = `
             <div class="absolute inset-0 flex justify-center"><div class="w-[2px] h-full bg-emerald-400/50 border-dashed"></div></div>
-            <div class="absolute w-24 h-24 border-[2px] border-emerald-400/50 rounded-full flex items-center justify-center"></div>
-            <span class="z-10 font-bold text-emerald-800 text-2xl tracking-[0.5em] uppercase bg-white/90 px-8 py-2 rounded-full shadow-sm">สนามกีฬา</span>
+            <div class="absolute w-40 h-40 border-[3px] border-emerald-400/50 rounded-full flex items-center justify-center"></div>
+            <span class="z-10 font-bold text-emerald-800 text-2xl tracking-[0.5em] uppercase bg-white/90 px-10 py-3 rounded-full shadow-sm backdrop-blur-sm">สนามกีฬา</span>
         `;
         mapContainer.appendChild(court);
 

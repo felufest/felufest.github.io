@@ -26,7 +26,6 @@
             position: relative;
         }
 
-        /* สไตล์เก้าอี้ */
         .seat {
             width: var(--cell-size);
             height: var(--cell-size);
@@ -52,7 +51,6 @@
             border-color: #94a3b8;
         }
         
-        /* สไตล์ทางเดิน */
         .stair { 
             width: var(--cell-size); 
             height: var(--cell-size); 
@@ -62,7 +60,6 @@
             border-radius: 4px;
         }
         
-        /* สไตล์โซนเวที */
         .stage-zone {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             color: #f8fafc;
@@ -80,7 +77,6 @@
         .stage-row-first { border-radius: 12px 12px 0 0; border-top: 2px solid #334155; }
         .stage-row-last { border-radius: 0 0 12px 12px; border-bottom: 2px solid #334155; }
 
-        /* สถานะต่างๆ ของเก้าอี้ */
         .seat.available { background-color: #f8fafc; }
         .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
         .seat.blocked:hover { color: white; transform: none; }
@@ -91,11 +87,28 @@
         .seat.green { background-color: #22c55e; border-color: #15803d; color: white; box-shadow: inset 0 -3px 0 #166534;}
         .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; box-shadow: inset 0 -3px 0 #92400e; }
         .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; box-shadow: inset 0 -3px 0 #9d174d; }
+
+        /* ระบบ Responsive ของ Layout */
+        #main-wrapper { transition: margin-right 0.3s ease-in-out; }
+        #legend-wrapper { transition: right 0.3s ease-in-out; }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+
+        /* เมื่อกาง Sidebar ออกบนหน้าจอคอม (md ขึ้นไป) */
+        @media (min-width: 768px) {
+            body.sidebar-open #main-wrapper { margin-right: 380px; }
+            body.sidebar-open #legend-wrapper { right: 412px; }
+        }
     </style>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 relative">
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 relative w-full">
 
-    <div class="fixed bottom-8 right-[412px] z-[100] group">
+    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-lg border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all duration-300 focus:outline-none group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </button>
+
+    <div id="legend-wrapper" class="fixed bottom-8 right-8 z-[100] group">
         <button class="bg-indigo-600 text-white shadow-xl shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -104,7 +117,6 @@
 
         <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
             <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">สัญลักษณ์ที่นั่ง</h3>
-            
             <div class="flex flex-col gap-3 text-sm font-semibold text-slate-600">
                 <div class="grid grid-cols-2 gap-3">
                     <span class="flex items-center"><div class="w-4 h-4 bg-white border border-slate-300 mr-2 rounded"></div> ว่าง</span>
@@ -122,9 +134,8 @@
         </div>
     </div>
 
-    <main class="flex-1 h-full overflow-auto p-4 md:p-8 relative">
+    <main id="main-wrapper" class="flex-1 h-full overflow-auto p-4 md:p-8 relative w-full">
         <div class="min-w-max bg-white p-10 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
-            
             <div class="text-center mb-8">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2">FeluFest #1</h1>
                 <p class="text-slate-500 font-medium">Interactive Seating Map Dashboard</p>
@@ -135,23 +146,31 @@
         </div>
     </main>
 
-    <aside class="w-[380px] bg-white border-l border-slate-200 shadow-2xl flex-shrink-0 flex flex-col h-full z-20 relative">
-        <div class="p-6 border-b border-slate-100 bg-slate-50">
+    <aside id="sidebar" class="fixed top-0 right-0 w-full md:w-[380px] bg-white border-l border-slate-200 shadow-2xl z-[200] flex flex-col h-full transform translate-x-full">
+        
+        <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 จัดการที่นั่ง
             </h2>
+            <button id="close-sidebar-btn" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
         </div>
 
         <div class="p-6 flex-1 overflow-y-auto">
-            <div id="seat-info" class="mb-8">
-                <p class="text-slate-500 text-sm mb-3 font-medium">1. รหัสที่นั่งที่เลือก</p>
-                <div class="bg-indigo-50 p-6 rounded-xl text-center border border-indigo-100 shadow-sm transition-all">
-                    <span id="selected-seat-id" class="text-4xl font-black text-indigo-700 tracking-wider">-</span>
-                </div>
+            <div id="no-seat-selected" class="text-center py-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                <p class="text-slate-500 font-medium">กรุณาคลิกเลือกเก้าอี้บนแผนที่<br>เพื่อแก้ไขข้อมูล</p>
             </div>
 
             <div id="seat-controls" class="hidden flex-col gap-5">
+                <div id="seat-info" class="mb-2">
+                    <p class="text-slate-500 text-sm mb-3 font-medium">1. รหัสที่นั่งที่เลือก</p>
+                    <div class="bg-indigo-50 p-6 rounded-xl text-center border border-indigo-100 shadow-sm">
+                        <span id="selected-seat-id" class="text-4xl font-black text-indigo-700 tracking-wider">-</span>
+                    </div>
+                </div>
+
                 <div>
                     <label class="text-sm font-bold text-slate-700 block mb-2">2. สถานะ / สีทีม:</label>
                     <select id="seat-status" class="w-full border border-slate-300 p-3 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all cursor-pointer font-medium text-slate-700 shadow-sm">
@@ -201,6 +220,25 @@
         const db = getFirestore(app);
         const mapContainer = document.getElementById('stadium-map');
 
+        // --- ลอจิกเปิด-ปิด Sidebar ---
+        const sidebar = document.getElementById('sidebar');
+        const openBtn = document.getElementById('open-sidebar-btn');
+        const closeBtn = document.getElementById('close-sidebar-btn');
+
+        function toggleSidebar(show) {
+            if (show) {
+                sidebar.classList.remove('translate-x-full');
+                document.body.classList.add('sidebar-open');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                document.body.classList.remove('sidebar-open');
+            }
+        }
+
+        openBtn.addEventListener('click', () => toggleSidebar(true));
+        closeBtn.addEventListener('click', () => toggleSidebar(false));
+
+        // --- วาดแผนที่ ---
         const topZoneNames = ['A', 'B', 'C', 'D', 'E'];
         const bottomZoneNames = ['F', 'G', 'H', 'STAGE', 'J', 'K', 'L'];
         const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F']; 
@@ -302,7 +340,6 @@
 
         renderStadiumSide(topZonesLayout, topZoneNames, true);
 
-        // นำโค้ดสนามกีฬาแบบใหม่ของคุณมาใส่
         const court = document.createElement('div');
         court.className = 'w-[2160px] h-[400px] bg-yellow-50 border-[3px] border-yellow-400/50 rounded-2xl flex flex-col justify-center items-center my-10 relative shadow-inner overflow-hidden flex-shrink-0';
         court.innerHTML = `
@@ -319,8 +356,15 @@
         function selectSeat(seatId) {
             currentSelectedSeat = seatId;
             document.getElementById('selected-seat-id').innerText = seatId;
-            document.getElementById('seat-controls').classList.remove('hidden');
             
+            // สลับแสดงฟอร์มซ่อนตัวอักษร "กรุณาเลือกเก้าอี้"
+            document.getElementById('no-seat-selected').classList.add('hidden');
+            document.getElementById('seat-controls').classList.remove('hidden');
+            document.getElementById('seat-controls').classList.add('flex');
+            
+            // กาง Sidebar อัตโนมัติเมื่อคลิกเก้าอี้
+            toggleSidebar(true);
+
             const seatEl = document.getElementById(seatId);
             const statusSelect = document.getElementById('seat-status');
             

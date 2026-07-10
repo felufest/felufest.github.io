@@ -11,7 +11,7 @@
         body { font-family: 'Prompt', 'Inter', sans-serif; overscroll-behavior: none; }
         
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
         :root {
@@ -40,29 +40,29 @@
             font-weight: 700;
             color: transparent;
             box-sizing: border-box;
-            background-color: #f8fafc;
-            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05);
+            background-color: #ffffff; /* ปรับให้สว่างขึ้น */
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.03);
         }
         .seat:hover {
             transform: scale(1.3) translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
             color: #1e293b;
             z-index: 50;
             border-color: #94a3b8;
         }
         
-        /* ดีไซน์ขั้นบันไดใหม่ (ริ้วแนวนอน) */
+        /* ขั้นบันได (ริ้วแนวนอน) */
         .stair { 
             width: var(--cell-size); 
             height: var(--cell-size); 
-            background: repeating-linear-gradient(180deg, #f8fafc, #f8fafc 4px, #cbd5e1 4px, #cbd5e1 6px); 
+            background: repeating-linear-gradient(180deg, #ffffff, #ffffff 4px, #e2e8f0 4px, #e2e8f0 6px); /* ปรับสีให้สว่าง */
             border-left: 1px solid #e2e8f0;
             border-right: 1px solid #e2e8f0;
             box-sizing: border-box;
         }
 
         /* สถานะต่างๆ ของเก้าอี้ */
-        .seat.available { background-color: #f8fafc; }
+        .seat.available { background-color: #ffffff; }
         .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
         .seat.blocked:hover { color: white; transform: none; }
         .seat.red { background-color: #ef4444; border-color: #b91c1c; color: white; box-shadow: inset 0 -3px 0 #991b1b;}
@@ -74,39 +74,50 @@
 
         /* ระบบ Responsive และ Zoom */
         #map-viewport { cursor: grab; }
-        #map-viewport:active { cursor: grabbing; }
+        #map-viewport.panning { cursor: grabbing; }
         #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #legend-wrapper { transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* ปิดการใช้งาน Pointer Events บนเก้าอี้เมื่ออยู่ในโหมด Pan บนมือถือ */
+        body.mobile-pan-mode .seat { pointer-events: none; }
 
         @media (min-width: 768px) {
             body.sidebar-open #map-wrapper { margin-right: 380px; }
             body.sidebar-open #legend-wrapper { right: 412px; }
             body.sidebar-open #zoom-controls { right: 412px; }
+            #mobile-pan-toggle { display: none; } /* ซ่อนปุ่ม Pan บน Desktop */
         }
     </style>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 relative w-full select-none">
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800 relative w-full select-none">
 
-    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-lg border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all focus:outline-none">
+    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-md border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
     </button>
+    
+    <button id="mobile-pan-toggle" class="fixed bottom-8 left-8 z-[90] bg-white text-slate-700 shadow-md border border-slate-200 px-4 py-3 rounded-full flex items-center gap-2 hover:bg-slate-50 transition-all focus:outline-none font-bold text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        <span>เลื่อนผัง</span>
+    </button>
 
     <div id="zoom-controls" class="fixed bottom-28 right-8 z-[90] flex flex-col gap-2 transition-all duration-300">
-        <button id="zoom-in" class="bg-white text-slate-700 shadow-lg border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">+</button>
-        <button id="zoom-out" class="bg-white text-slate-700 shadow-lg border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">-</button>
+        <button id="zoom-in" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">+</button>
+        <button id="zoom-out" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">-</button>
     </div>
 
     <div id="legend-wrapper" class="fixed bottom-8 right-8 z-[100] group">
-        <button class="bg-indigo-600 text-white shadow-xl shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
+        <button class="bg-indigo-600 text-white shadow-lg shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </button>
 
-        <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
+        <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
             <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">สัญลักษณ์ที่นั่ง</h3>
             <div class="flex flex-col gap-3 text-sm font-semibold text-slate-600">
                 <div class="grid grid-cols-2 gap-3">
@@ -125,15 +136,15 @@
         </div>
     </div>
 
-    <main id="map-wrapper" class="flex-1 h-full relative w-full bg-slate-200 overflow-hidden transition-all duration-300">
+    <main id="map-wrapper" class="flex-1 h-full relative w-full bg-slate-100 overflow-hidden transition-all duration-300">
         
-        <div class="absolute top-6 left-6 z-50 bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-sm border border-slate-200 pointer-events-none">
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">FeluFest #1</h1>
-            <p class="text-slate-500 text-xs font-medium">Seating Map Dashboard</p>
+        <div class="absolute top-6 left-6 z-50 bg-white/90 backdrop-blur px-6 py-3 rounded-xl shadow-sm border border-slate-200 pointer-events-none">
+            <h1 class="text-xl font-black text-slate-900 tracking-tight">FeluFest #1</h1>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Seating Map</p>
         </div>
 
         <div id="map-viewport" class="w-full h-full absolute inset-0 flex items-center justify-center">
-            <div id="stadium-map" class="flex flex-col gap-1.5 items-center bg-slate-100 p-16 rounded-[3rem] border-4 border-slate-300 shadow-2xl transition-transform duration-75 origin-center will-change-transform">
+            <div id="stadium-map" class="flex flex-col gap-1.5 items-center bg-slate-50 p-16 rounded-[3rem] border border-slate-200 shadow-lg transition-transform duration-75 origin-center will-change-transform">
                 </div>
         </div>
     </main>
@@ -183,7 +194,7 @@
                     <input type="text" id="assigned-user" placeholder="ระบุชื่อผู้ใช้งาน..." class="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm">
                 </div>
 
-                <button id="save-seat-btn" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2">
+                <button id="save-seat-btn" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
                     บันทึกข้อมูล
                 </button>
             </div>
@@ -208,9 +219,10 @@
         const db = getFirestore(app);
         const mapContainer = document.getElementById('stadium-map');
 
-        // --- ระบบ Pan & Zoom (รองรับเมาส์และนิ้วมือ) ---
+        // --- ระบบ Pan & Zoom ---
         const viewport = document.getElementById('map-viewport');
-        let scale = window.innerWidth > 768 ? 0.6 : 0.3; // จอคอมเริ่ม 60%, มือถือเริ่ม 30%
+        const minScale = 0.6; // ล็อคขนาดต่ำสุดไว้ที่ 60% เสมอ
+        let scale = minScale; 
         let panX = 0, panY = 0;
         let isDragging = false, startX, startY;
         let initialDistance = null, initialScale = null;
@@ -220,21 +232,21 @@
         }
         updateTransform();
 
-        // ปุ่มซูม
         document.getElementById('zoom-in').onclick = () => { scale = Math.min(scale + 0.1, 2); updateTransform(); };
-        document.getElementById('zoom-out').onclick = () => { scale = Math.max(scale - 0.1, 0.15); updateTransform(); };
+        document.getElementById('zoom-out').onclick = () => { scale = Math.max(scale - 0.1, minScale); updateTransform(); };
 
-        // Mouse Events (ลาก + ลูกกลิ้งเมาส์)
+        // Mouse Events
         viewport.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
-            scale = Math.min(Math.max(0.15, scale), 2);
+            scale = Math.min(Math.max(minScale, scale), 2);
             updateTransform();
         }, { passive: false });
 
         viewport.addEventListener('mousedown', (e) => {
             if (e.target.closest('.seat') || e.target.closest('button')) return;
             isDragging = true;
+            viewport.classList.add('panning');
             startX = e.clientX - panX;
             startY = e.clientY - panY;
         });
@@ -245,11 +257,42 @@
             panY = e.clientY - startY;
             updateTransform();
         });
-        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('panning');
+        });
 
-        // Touch Events (มือถือลาก + Pinch ซูม)
+        // Touch Events & Mobile Pan Mode
+        const panToggleBtn = document.getElementById('mobile-pan-toggle');
+        let isMobilePanMode = false;
+
+        panToggleBtn.addEventListener('click', () => {
+            isMobilePanMode = !isMobilePanMode;
+            if (isMobilePanMode) {
+                document.body.classList.add('mobile-pan-mode');
+                panToggleBtn.classList.replace('bg-white', 'bg-indigo-100');
+                panToggleBtn.classList.replace('text-slate-700', 'text-indigo-700');
+                panToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <span>เลือกเก้าอี้</span>
+                `;
+            } else {
+                document.body.classList.remove('mobile-pan-mode');
+                panToggleBtn.classList.replace('bg-indigo-100', 'bg-white');
+                panToggleBtn.classList.replace('text-indigo-700', 'text-slate-700');
+                panToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                    <span>เลื่อนผัง</span>
+                `;
+            }
+        });
+
         viewport.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.seat') || e.target.closest('button')) return;
+            if (!isMobilePanMode && e.target.closest('.seat')) return; // ถ้าไม่ได้เปิดโหมด Pan ให้กดเก้าอี้ได้
             if (e.touches.length === 1) {
                 isDragging = true;
                 startX = e.touches[0].clientX - panX;
@@ -262,7 +305,7 @@
         });
 
         viewport.addEventListener('touchmove', (e) => {
-            if (e.target.closest('.seat')) return;
+            if (!isMobilePanMode && e.target.closest('.seat')) return;
             e.preventDefault();
             if (isDragging && e.touches.length === 1) {
                 panX = e.touches[0].clientX - startX;
@@ -271,7 +314,7 @@
             } else if (e.touches.length === 2 && initialDistance) {
                 const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 scale = initialScale * (currentDistance / initialDistance);
-                scale = Math.min(Math.max(0.15, scale), 2);
+                scale = Math.min(Math.max(minScale, scale), 2);
                 updateTransform();
             }
         }, { passive: false });
@@ -323,7 +366,7 @@
                 const rowLetter = isTopSide ? rowLetters[5 - index] : rowLetters[index];
                 
                 const rowLabelLeft = document.createElement('div');
-                rowLabelLeft.className = 'w-8 flex items-center justify-center font-black text-slate-400 text-sm';
+                rowLabelLeft.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-sm';
                 rowLabelLeft.innerText = rowLetter;
                 rowDiv.appendChild(rowLabelLeft);
 
@@ -334,10 +377,9 @@
                     const zoneContainer = document.createElement('div');
                     zoneContainer.className = 'seat-container';
                     
-                    // ป้ายชื่อโซน (แสดงผลตลอดเวลาที่ขอบบนสุด/ล่างสุด)
                     if ((isTopSide && index === 0) || (!isTopSide && index === 5)) {
                         const zoneLabel = document.createElement('div');
-                        zoneLabel.className = `absolute ${isTopSide ? '-top-10' : '-bottom-10'} left-1/2 transform -translate-x-1/2 text-slate-400 font-bold text-sm tracking-widest bg-slate-200/50 px-4 py-1 rounded-full whitespace-nowrap`;
+                        zoneLabel.className = `absolute ${isTopSide ? '-top-10' : '-bottom-10'} left-1/2 transform -translate-x-1/2 text-slate-400 font-bold text-sm tracking-widest bg-white/50 px-4 py-1 rounded-full whitespace-nowrap`;
                         zoneLabel.innerText = `ZONE ${zoneName}`;
                         if(zoneName !== 'STAGE') zoneContainer.appendChild(zoneLabel);
                     }
@@ -345,16 +387,14 @@
                     let seatNum = 1;
                     let isBlind = false;
 
-                    // การเรนเดอร์เวทีแบบก้อนเดียว
                     if (zoneStr === '<STAGE>') {
                         const stageContainer = document.createElement('div');
+                        // ปรับขนาดความกว้างเวทีให้เท่ากับโซน 72 ที่นั่ง
                         stageContainer.className = 'w-[calc((var(--cell-size)*12)+(var(--cell-gap)*11))] relative';
                         
-                        // เรนเดอร์กล่องเวทีใหญ่แค่ครั้งเดียวที่แถวบนสุดของล่าง (index 0)
                         if (index === 0) {
                             const stageDiv = document.createElement('div');
-                            stageDiv.className = 'absolute top-0 left-0 w-full bg-slate-900 rounded-xl flex items-center justify-center text-white border-2 border-slate-700 shadow-2xl z-10';
-                            // ความสูง = เก้าอี้ 6 แถว + ช่องว่าง 5 ช่อง
+                            stageDiv.className = 'absolute top-0 left-0 w-full bg-slate-900 rounded-xl flex items-center justify-center text-white border-2 border-slate-700 shadow-xl z-10';
                             stageDiv.style.height = 'calc((var(--cell-size) * 6) + (var(--cell-gap) * 5))';
                             stageDiv.innerHTML = "<span class='tracking-[0.5em] text-3xl font-black text-slate-300'>STAGE</span>";
                             stageContainer.appendChild(stageDiv);
@@ -382,9 +422,10 @@
                             seat.innerText = seatNumStr; 
                             
                             seat.className = `seat ${isBlind ? 'blocked' : 'available'}`;
-                            // แก้ปัญหาทัชแพดมือถือคลิกเก้าอี้
-                            seat.addEventListener('pointerup', (e) => {
-                                if(!isDragging) selectSeat(seatId);
+                            
+                            // ใช้ Event Listener แยกเพื่อให้ทำงานร่วมกับโหมด Pan บนมือถือได้
+                            seat.addEventListener('pointerdown', (e) => {
+                                if (!isMobilePanMode) selectSeat(seatId);
                             });
                             
                             zoneContainer.appendChild(seat);
@@ -395,7 +436,7 @@
                 });
 
                 const rowLabelRight = document.createElement('div');
-                rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-400 text-sm';
+                rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-sm';
                 rowLabelRight.innerText = rowLetter;
                 rowDiv.appendChild(rowLabelRight);
                 mapContainer.appendChild(rowDiv);
@@ -405,7 +446,7 @@
         renderStadiumSide(topZonesLayout, topZoneNames, true);
 
         const court = document.createElement('div');
-        court.className = 'w-[2160px] h-[400px] bg-yellow-50 border-[3px] border-yellow-400/50 rounded-2xl flex flex-col justify-center items-center my-14 relative shadow-inner overflow-hidden flex-shrink-0';
+        court.className = 'w-[2160px] h-[400px] bg-yellow-50 border-[3px] border-yellow-400/50 rounded-2xl flex flex-col justify-center items-center my-14 relative shadow-sm overflow-hidden flex-shrink-0';
         court.innerHTML = `
             <div class="absolute inset-0 flex justify-center"><div class="w-[2px] h-full bg-yellow-400/50 border-dashed"></div></div>
             <div class="absolute w-40 h-40 border-[3px] border-yellow-400/50 rounded-full flex items-center justify-center"></div>
@@ -416,7 +457,7 @@
         renderStadiumSide(bottomZonesLayout, bottomZoneNames, false);
 
 
-        // --- ลอจิกเลือกและบันทึกที่นั่ง (Optimistic UI Update เร็วทะลุนรก) ---
+        // --- ลอจิกเลือกและบันทึกที่นั่ง (Optimistic UI Update) ---
         let currentSelectedSeat = null;
         
         function selectSeat(seatId) {
@@ -450,12 +491,10 @@
             const assignedUser = document.getElementById('assigned-user').value;
             const seatEl = document.getElementById(currentSelectedSeat);
             
-            // 1. Optimistic Update (เปลี่ยนสี UI ทันที ไม่ต้องรอเน็ต!)
             seatEl.className = `seat ${status}`;
-            seatEl.style.boxShadow = "0 0 0 4px rgba(79, 70, 229, 0.4)"; // กระพริบสีน้ำเงินบอกว่าอัปเดตแล้ว
+            seatEl.style.boxShadow = "0 0 0 4px rgba(79, 70, 229, 0.4)"; 
             setTimeout(() => { seatEl.style.boxShadow = ""; }, 500);
 
-            // 2. แอบส่งข้อมูลไปเซฟที่หลังบ้านเงียบๆ
             setDoc(doc(db, "seats", currentSelectedSeat), {
                 status: status,
                 assigned_to: assignedUser,
@@ -466,12 +505,11 @@
             });
         });
 
-        // ดึงข้อมูล Realtime เพื่อให้เครื่องอื่นเห็นสีเปลี่ยนตาม
         onSnapshot(collection(db, "seats"), (snapshot) => {
             snapshot.forEach((doc) => {
                 const seatData = doc.data();
                 const seatEl = document.getElementById(doc.id);
-                if(seatEl && currentSelectedSeat !== doc.id) { // ไม่เขียนทับเก้าอี้ที่ตัวเองกำลังกดอยู่
+                if(seatEl && currentSelectedSeat !== doc.id) {
                     seatEl.className = `seat ${seatData.status || 'available'}`;
                 }
             });

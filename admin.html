@@ -2,17 +2,17 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>FeluFest #1 - Seating Map Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Prompt:wght@400;600;700;900&display=swap');
 
-        body { font-family: 'Prompt', 'Inter', sans-serif; }
+        body { font-family: 'Prompt', 'Inter', sans-serif; overflow: hidden; }
         
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         :root {
@@ -20,11 +20,7 @@
             --cell-gap: 4px;
         }
 
-        .seat-container {
-            display: flex;
-            gap: var(--cell-gap);
-            position: relative;
-        }
+        .seat-container { display: flex; gap: var(--cell-gap); position: relative; }
 
         /* สไตล์เก้าอี้ */
         .seat {
@@ -35,62 +31,33 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid #cbd5e1;
             font-size: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: transparent;
-            box-sizing: border-box;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: transparent; box-sizing: border-box;
             background-color: #f8fafc;
             box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05);
         }
         .seat:hover {
             transform: scale(1.25) translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
-            color: #1e293b;
-            z-index: 50;
-            border-color: #94a3b8;
+            color: #1e293b; z-index: 50; border-color: #94a3b8;
         }
         
-        /* สไตล์ทางเดิน (ขั้นบันได 3D) */
+        /* สไตล์ขั้นบันได (แก้ไขให้เหมือนบันไดจริง) */
         .stair { 
             width: var(--cell-size); 
             height: var(--cell-size); 
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #cbd5e1 50%, #94a3b8 100%);
-            background-size: 100% 6px; /* ขนาดของแต่ละขั้นบันได */
-            box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
-            border-left: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
-            box-sizing: border-box;
+            background: repeating-linear-gradient(to bottom, #94a3b8 0px, #94a3b8 2px, #f1f5f9 2px, #f1f5f9 8px); 
+            border-left: 2px solid #64748b;
+            border-right: 2px solid #64748b;
             border-radius: 2px;
-            opacity: 0.7;
+            box-sizing: border-box;
+            opacity: 0.8;
         }
         
-        /* สไตล์โซนเวที (ทำให้เชื่อมต่อเป็นก้อนเดียว) */
-        .stage-zone {
-            background: #0f172a;
-            color: #f8fafc;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: calc((var(--cell-size) * 12) + (var(--cell-gap) * 11)); 
-            /* ลบช่องว่างระหว่างแถวด้วย margin ติดลบ */
-            height: calc(100% + 6px); 
-            margin-top: -3px;
-            margin-bottom: -3px;
-            border-left: 2px solid #334155;
-            border-right: 2px solid #334155;
-            position: relative;
-            z-index: 10;
-        }
-        .stage-row-first { border-radius: 12px 12px 0 0; border-top: 2px solid #334155; margin-top: 0; height: calc(100% + 3px); }
-        .stage-row-last { border-radius: 0 0 12px 12px; border-bottom: 2px solid #334155; margin-bottom: 0; height: calc(100% + 3px); }
-
-        /* สถานะต่างๆ ของเก้าอี้ */
         .seat.available { background-color: #f8fafc; }
         .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
         .seat.blocked:hover { color: white; transform: none; }
+        
         .seat.red { background-color: #ef4444; border-color: #b91c1c; color: white; box-shadow: inset 0 -3px 0 #991b1b;}
         .seat.purple { background-color: #a855f7; border-color: #7e22ce; color: white; box-shadow: inset 0 -3px 0 #6b21a8;}
         .seat.blue { background-color: #3b82f6; border-color: #1d4ed8; color: white; box-shadow: inset 0 -3px 0 #1e40af;}
@@ -98,37 +65,37 @@
         .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; box-shadow: inset 0 -3px 0 #92400e; }
         .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; box-shadow: inset 0 -3px 0 #9d174d; }
 
-        /* ระบบ Responsive */
-        #main-wrapper { transition: margin-right 0.3s ease-in-out; }
-        #legend-wrapper { transition: right 0.3s ease-in-out; }
+        /* จัดการ Layout เปิดปิด */
         #sidebar { transition: transform 0.3s ease-in-out; }
+        #map-scale-wrapper { transform-origin: top left; transition: transform 0.2s ease-out; }
         
-        /* รองรับการ Zoom Layout */
-        #map-scalable-container { transition: zoom 0.2s ease-out; transform-origin: top center; }
-
         @media (min-width: 768px) {
-            body.sidebar-open #main-wrapper { margin-right: 380px; }
-            body.sidebar-open #legend-wrapper { right: 412px; }
+            body.sidebar-open #main-container { padding-right: 380px; transition: padding-right 0.3s ease-in-out; }
+            body.sidebar-open #legend-wrapper { right: 412px; transition: right 0.3s ease-in-out; }
+            #legend-wrapper { right: 32px; transition: right 0.3s ease-in-out; }
         }
     </style>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 relative w-full">
+<body class="bg-slate-200 flex h-screen text-slate-800 relative w-full">
 
-    <div class="fixed top-6 left-6 z-[90] flex items-center bg-white rounded-full shadow-lg border border-slate-200 p-1">
-        <button id="zoom-out" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition font-bold text-xl">-</button>
-        <span id="zoom-level" class="w-14 text-center font-bold text-sm text-slate-700">100%</span>
-        <button id="zoom-in" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition font-bold text-xl">+</button>
+    <div class="fixed top-6 left-6 z-[90] flex items-center gap-2 bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-200">
+        <button id="zoom-out" class="w-10 h-10 bg-slate-100 rounded-lg hover:bg-slate-200 font-bold text-xl text-slate-600 transition-colors">-</button>
+        <span id="zoom-level" class="w-16 flex items-center justify-center font-bold text-sm text-indigo-700">100%</span>
+        <button id="zoom-in" class="w-10 h-10 bg-slate-100 rounded-lg hover:bg-slate-200 font-bold text-xl text-slate-600 transition-colors">+</button>
     </div>
 
-    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-lg border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all duration-300 focus:outline-none group">
+    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-lg border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:scale-105 transition-all duration-300 focus:outline-none group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
     </button>
 
     <div id="legend-wrapper" class="fixed bottom-8 right-8 z-[100] group">
         <button class="bg-indigo-600 text-white shadow-xl shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
         </button>
 
         <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
@@ -137,8 +104,8 @@
                 <div class="grid grid-cols-2 gap-3">
                     <span class="flex items-center"><div class="w-4 h-4 bg-white border border-slate-300 mr-2 rounded"></div> ว่าง</span>
                     <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2 rounded"></div> บล็อก</span>
-                    <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขก</span>
-                    <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2 rounded"></div> หลีดเดอร์</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขกรับเชิญ</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2 rounded"></div> เชียร์ลีดเดอร์</span>
                 </div>
                 <div class="border-t border-slate-100 pt-3 mt-1 grid grid-cols-2 gap-3">
                     <span class="flex items-center"><div class="w-3 h-3 bg-red-500 mr-2 rounded-sm shadow-sm"></div> สีแดง</span>
@@ -150,21 +117,22 @@
         </div>
     </div>
 
-    <main id="main-wrapper" class="flex-1 h-full overflow-auto p-4 md:p-8 relative w-full flex justify-center">
-        <div id="map-scalable-container" class="min-w-max bg-white p-10 pt-20 pb-20 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center">
-            
-            <div class="text-center mb-16">
-                <h1 class="text-5xl font-black text-slate-900 tracking-tight mb-2 uppercase">FeluFest #1</h1>
-                <p class="text-slate-500 font-bold tracking-widest text-lg">SEATING MAP DASHBOARD</p>
-            </div>
-
-            <div id="stadium-map" class="flex flex-col gap-[6px] items-center bg-slate-100 p-12 rounded-[3rem] border-2 border-slate-200">
+    <main id="main-container" class="flex-1 w-full h-full overflow-auto relative">
+        <div class="min-w-max min-h-max p-10 md:p-20">
+            <div id="map-scale-wrapper" class="bg-white p-16 rounded-[3rem] shadow-xl border border-slate-200 flex flex-col items-center mx-auto">
+                
+                <div class="text-center mb-12">
+                    <h1 class="text-6xl font-black text-slate-900 tracking-tight mb-4 uppercase">FeluFest #1</h1>
+                    <p class="text-slate-500 font-bold text-xl tracking-widest uppercase">Seating Map Dashboard</p>
                 </div>
+
+                <div id="stadium-map" class="flex flex-col gap-[6px] items-center">
+                    </div>
+            </div>
         </div>
     </main>
 
-    <aside id="sidebar" class="fixed top-0 right-0 w-full md:w-[380px] bg-white border-l border-slate-200 shadow-2xl z-[200] flex flex-col h-full transform translate-x-full">
-        
+    <aside id="sidebar" class="fixed top-0 right-0 w-[90%] sm:w-[380px] bg-white border-l border-slate-200 shadow-2xl z-[200] flex flex-col h-full transform translate-x-full">
         <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">จัดการที่นั่ง</h2>
             <button id="close-sidebar-btn" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
@@ -175,7 +143,7 @@
         <div class="p-6 flex-1 overflow-y-auto">
             <div id="no-seat-selected" class="text-center py-10">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
-                <p class="text-slate-500 font-medium">กรุณาคลิกเลือกเก้าอี้บนแผนที่<br>เพื่อแก้ไขข้อมูล</p>
+                <p class="text-slate-500 font-medium">คลิกเลือกเก้าอี้บนแผนที่<br>เพื่อแก้ไขข้อมูล</p>
             </div>
 
             <div id="seat-controls" class="hidden flex-col gap-5">
@@ -188,7 +156,7 @@
 
                 <div>
                     <label class="text-sm font-bold text-slate-700 block mb-2">2. สถานะ / สีทีม:</label>
-                    <select id="seat-status" class="w-full border border-slate-300 p-3 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all cursor-pointer font-medium text-slate-700 shadow-sm">
+                    <select id="seat-status" class="w-full border border-slate-300 p-3 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium text-slate-700 shadow-sm">
                         <option value="available">⚪ ว่าง (Available)</option>
                         <option value="blocked">⚫ บล็อก / สตาฟฟ์ (Blocked)</option>
                         <optgroup label="ผู้ชมทั่วไป">
@@ -205,13 +173,13 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-bold text-slate-700 block mb-2">3. ผูกกับผู้ร่วมงาน (User ID):</label>
-                    <input type="text" id="assigned-user" placeholder="ระบุชื่อผู้ใช้งาน..." class="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm">
+                    <label class="text-sm font-bold text-slate-700 block mb-2">3. ผูกกับผู้ร่วมงาน (User ID / ชื่อ):</label>
+                    <input type="text" id="assigned-user" placeholder="ระบุชื่อผู้ใช้งาน..." class="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm">
                 </div>
 
-                <button id="save-seat-btn" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2">
+                <button id="save-seat-btn" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                    บันทึกข้อมูล (Save)
+                    บันทึกข้อมูล
                 </button>
             </div>
         </div>
@@ -235,25 +203,29 @@
         const db = getFirestore(app);
         const mapContainer = document.getElementById('stadium-map');
 
-        // --- ระบบ Zoom อัตโนมัติ ---
-        let currentScale = window.innerWidth < 768 ? 0.35 : (window.innerWidth < 1280 ? 0.7 : 1);
-        const scaleContainer = document.getElementById('map-scalable-container');
+        // --- ระบบ Zoom อัจฉริยะ ---
+        const scaleWrapper = document.getElementById('map-scale-wrapper');
         const zoomLevelTxt = document.getElementById('zoom-level');
+        // ตั้งค่า Scale เริ่มต้น: คอม 60%, มือถือ 35%
+        let currentScale = window.innerWidth < 768 ? 0.35 : 0.60; 
 
         function updateZoom() {
-            scaleContainer.style.zoom = currentScale;
-            zoomLevelTxt.innerText = Math.round(currentScale * 100) + '%';
+            scaleWrapper.style.transform = `scale(${currentScale})`;
+            zoomLevelTxt.innerText = `${Math.round(currentScale * 100)}%`;
         }
-        
+
         document.getElementById('zoom-in').addEventListener('click', () => {
-            if(currentScale < 2) { currentScale += 0.1; updateZoom(); }
+            if (currentScale < 1.5) { currentScale += 0.1; updateZoom(); }
         });
         document.getElementById('zoom-out').addEventListener('click', () => {
-            if(currentScale > 0.2) { currentScale -= 0.1; updateZoom(); }
+            if (currentScale > 0.2) { currentScale -= 0.1; updateZoom(); }
         });
-        updateZoom(); // ตั้งค่าซูมเริ่มต้น
+        
+        // รันครั้งแรกเมื่อโหลดหน้าเว็บ
+        updateZoom(); 
 
-        // --- ระบบ Sidebar ---
+
+        // --- ระบบเปิด-ปิด Sidebar ---
         const sidebar = document.getElementById('sidebar');
         function toggleSidebar(show) {
             if (show) {
@@ -266,6 +238,7 @@
         }
         document.getElementById('open-sidebar-btn').addEventListener('click', () => toggleSidebar(true));
         document.getElementById('close-sidebar-btn').addEventListener('click', () => toggleSidebar(false));
+
 
         // --- วาดแผนที่ ---
         const topZoneNames = ['A', 'B', 'C', 'D', 'E'];
@@ -282,23 +255,22 @@
         ];
         const bottomZonesLayout = [
             "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)",
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)",
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)",
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)",
-            "(*******)*--**|************|******--****|<STAGE>|****--******|************|**--*(*******)",
-            "(*******)*****|************|************|<STAGE>|************|************|*****(*******)"
+            "(*******)*--**|************|******--****|<SKIP>|****--******|************|**--*(*******)",
+            "(*******)*--**|************|******--****|<SKIP>|****--******|************|**--*(*******)",
+            "(*******)*--**|************|******--****|<SKIP>|****--******|************|**--*(*******)",
+            "(*******)*--**|************|******--****|<SKIP>|****--******|************|**--*(*******)",
+            "(*******)*****|************|************|<SKIP>|************|************|*****(*******)"
         ];
 
         function renderStadiumSide(layoutArray, zoneNamesArray, isTopSide) {
             layoutArray.forEach((rowStr, index) => {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'flex gap-4 justify-center w-full relative';
+                rowDiv.className = 'flex gap-4 justify-center mb-0 w-full'; // เอา mb-1 ออก เพราะเราใช้ gap ของคอนเทนเนอร์หลักแทน
                 
                 const rowLetter = isTopSide ? rowLetters[5 - index] : rowLetters[index];
                 
-                // ป้ายบอกแถว (ซ้าย)
                 const rowLabelLeft = document.createElement('div');
-                rowLabelLeft.className = 'w-8 flex items-center justify-center font-black text-slate-400 text-sm';
+                rowLabelLeft.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-lg';
                 rowLabelLeft.innerText = rowLetter;
                 rowDiv.appendChild(rowLabelLeft);
 
@@ -307,25 +279,42 @@
                 zones.forEach((zoneStr, zIdx) => {
                     const zoneName = zoneNamesArray[zIdx];
                     const zoneContainer = document.createElement('div');
-                    zoneContainer.className = 'seat-container group/zone relative';
+                    zoneContainer.className = 'seat-container relative';
                     
-                    // ป้ายบอกชื่อโซนถาวร (Zone Label)
-                    if ((isTopSide && index === 0) || (!isTopSide && index === layoutArray.length - 1)) {
+                    // แปะชื่อโซนไว้ด้านบน(ฝั่ง Top) หรือด้านล่าง(ฝั่ง Bottom) ถาวร!
+                    if (isTopSide && index === 0) {
                         const label = document.createElement('div');
-                        label.className = `absolute ${isTopSide ? '-top-10' : '-bottom-10'} left-0 w-full text-center font-black text-slate-300 text-lg tracking-widest`;
-                        label.innerText = zoneName !== 'STAGE' ? `ZONE ${zoneName}` : '';
+                        label.className = 'absolute -top-10 w-full text-center font-black text-slate-400 text-xl tracking-widest';
+                        label.innerText = `ZONE ${zoneName}`;
+                        zoneContainer.appendChild(label);
+                    } else if (!isTopSide && index === 5 && zoneName !== 'STAGE') {
+                        const label = document.createElement('div');
+                        label.className = 'absolute -bottom-10 w-full text-center font-black text-slate-400 text-xl tracking-widest';
+                        label.innerText = `ZONE ${zoneName}`;
                         zoneContainer.appendChild(label);
                     }
 
                     let seatNum = 1;
                     let isBlind = false;
 
-                    if (zoneStr === '<STAGE>') {
-                        const stageDiv = document.createElement('div');
-                        stageDiv.className = `stage-zone ${index === 0 ? 'stage-row-first' : ''} ${index === 5 ? 'stage-row-last' : ''}`;
-                        if (index === 2) stageDiv.innerHTML = "<span class='tracking-[0.5em] text-2xl text-slate-300'>STAGE</span>";
-                        zoneContainer.appendChild(stageDiv);
-                        rowDiv.appendChild(zoneContainer);
+                    // วาด STAGE แบบบล็อกเดียวไร้รอยต่อ
+                    if (zoneStr === '<STAGE>' || zoneStr === '<SKIP>') {
+                        const placeholder = document.createElement('div');
+                        // ความกว้างเท่ากับ 12 เก้าอี้ + 11 ช่องว่าง
+                        placeholder.style.width = `calc((var(--cell-size) * 12) + (var(--cell-gap) * 11))`;
+                        placeholder.className = 'relative flex-shrink-0';
+
+                        // สร้างก้อน STAGE จริงๆ แค่ในแถวแรก แล้วสั่ง absolute คลุมลงมา
+                        if (zoneStr === '<STAGE>') {
+                            const stageDiv = document.createElement('div');
+                            stageDiv.className = 'absolute top-0 left-0 w-full rounded-2xl flex items-center justify-center z-10 shadow-2xl border-4 border-slate-700';
+                            stageDiv.style.background = 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)';
+                            // ความสูง = 6 แถว + 5 ช่องว่าง(แถวละ 6px)
+                            stageDiv.style.height = `calc((var(--cell-size) * 6) + (6px * 5))`;
+                            stageDiv.innerHTML = "<span class='tracking-[0.5em] text-4xl text-white font-black drop-shadow-md'>STAGE</span>";
+                            placeholder.appendChild(stageDiv);
+                        }
+                        rowDiv.appendChild(placeholder);
                         return; 
                     }
 
@@ -346,6 +335,7 @@
                             seat.id = seatId;
                             seat.title = seatId; 
                             seat.innerText = seatNumStr; 
+                            
                             seat.className = `seat ${isBlind ? 'blocked' : 'available'}`;
                             seat.onclick = () => selectSeat(seatId);
                             zoneContainer.appendChild(seat);
@@ -355,9 +345,8 @@
                     rowDiv.appendChild(zoneContainer);
                 });
 
-                // ป้ายบอกแถว (ขวา)
                 const rowLabelRight = document.createElement('div');
-                rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-400 text-sm';
+                rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-lg';
                 rowLabelRight.innerText = rowLetter;
                 rowDiv.appendChild(rowLabelRight);
 
@@ -365,9 +354,10 @@
             });
         }
 
+        // 1. วาดฝั่งบน
         renderStadiumSide(topZonesLayout, topZoneNames, true);
 
-        // สนามกีฬาอเนกประสงค์
+        // 2. วาดสนามกีฬา
         const court = document.createElement('div');
         court.className = 'w-[2160px] h-[400px] bg-yellow-50 border-[3px] border-yellow-400/50 rounded-2xl flex flex-col justify-center items-center my-14 relative shadow-inner overflow-hidden flex-shrink-0';
         court.innerHTML = `
@@ -377,19 +367,20 @@
         `;
         mapContainer.appendChild(court);
 
+        // 3. วาดฝั่งล่าง
         renderStadiumSide(bottomZonesLayout, bottomZoneNames, false);
 
-        // --- ระบบ Interactive ---
         let currentSelectedSeat = null;
         
         function selectSeat(seatId) {
             currentSelectedSeat = seatId;
             document.getElementById('selected-seat-id').innerText = seatId;
+            
             document.getElementById('no-seat-selected').classList.add('hidden');
             document.getElementById('seat-controls').classList.remove('hidden');
             document.getElementById('seat-controls').classList.add('flex');
             
-            toggleSidebar(true); // เด้ง Sidebar ออกมาอัตโนมัติ
+            toggleSidebar(true);
 
             const seatEl = document.getElementById(seatId);
             const statusSelect = document.getElementById('seat-status');
@@ -406,37 +397,34 @@
             document.getElementById('assigned-user').value = "";
         }
 
-        // ระบบบันทึกไวปานสายฟ้า (Optimistic UI Update)
+        // ระบบเซฟความเร็วแสง (Optimistic Update)
         document.getElementById('save-seat-btn').addEventListener('click', () => {
             if(!currentSelectedSeat) return;
+
             const status = document.getElementById('seat-status').value;
             const assignedUser = document.getElementById('assigned-user').value;
+
+            // 1. อัปเดตหน้าจอทันที ไม่ต้องรอเน็ต! (Optimistic)
             const seatEl = document.getElementById(currentSelectedSeat);
-
-            // 1. เปลี่ยนสีบนหน้าจอทันที ไม่ต้องรอโหลด
-            seatEl.className = 'seat';
-            if(status) { seatEl.classList.add(status); } 
-            else { seatEl.classList.add('available'); }
-
-            // เอฟเฟกต์กระพริบสีเขียวว่าเซฟแล้ว
-            seatEl.style.boxShadow = "0 0 0 4px rgba(34, 197, 94, 0.6)";
+            seatEl.className = `seat ${status !== 'available' ? status : 'available'}`;
+            seatEl.style.boxShadow = "0 0 0 4px rgba(34, 197, 94, 0.6)"; // แฟลชสีเขียว
             setTimeout(() => { seatEl.style.boxShadow = ""; }, 1000);
 
-            // ถ้าใช้งานบนมือถือ ให้ปิด Sidebar ทันทีหลังกดเซฟเพื่อคืนพื้นที่ให้แผนที่
-            if(window.innerWidth < 768) { toggleSidebar(false); }
+            // 2. ซ่อน Sidebar บนมือถืออัตโนมัติเมื่อกดเซฟ เพื่อให้เห็นผลลัพธ์
+            if (window.innerWidth < 768) toggleSidebar(false);
 
-            // 2. ส่งข้อมูลไปเก็บที่ Firebase ทำงานเบื้องหลังเงียบๆ
+            // 3. ส่งข้อมูลไปเซฟที่ Firebase เงียบๆ เป็นแบคกราวด์
             setDoc(doc(db, "seats", currentSelectedSeat), {
                 status: status,
                 assigned_to: assignedUser,
                 updated_at: new Date()
-            }).catch((error) => {
-                console.error("Save Error:", error);
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่ออินเทอร์เน็ต");
+            }).catch(error => {
+                console.error("Save error:", error);
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่");
             });
         });
 
-        // ดึงข้อมูลครั้งแรก
+        // ดึงข้อมูล Realtime จาก Firebase
         onSnapshot(collection(db, "seats"), (snapshot) => {
             snapshot.forEach((doc) => {
                 const seatData = doc.data();

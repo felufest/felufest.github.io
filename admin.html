@@ -137,15 +137,13 @@
 
         <div id="map-viewport" class="w-full h-full absolute inset-0 flex items-center justify-center">
             
-            <!-- คอนเทนเนอร์หลัก -->
             <div id="stadium-map" class="flex flex-col items-center bg-slate-50 p-16 rounded-[3rem] border border-slate-200 shadow-xl transition-transform duration-75 origin-center will-change-transform min-w-max">
                 
                 <!-- โซนห้องน้ำและโถงทางเดิน (Top Surrounding) -->
                 <div class="w-full flex flex-col gap-6 mb-16 px-16 relative">
                     <div class="flex gap-6 h-40 w-full">
-                        <!-- Elevator กว้างขึ้น -->
-                        <div class="bg-slate-200 border border-slate-300 w-80 sharp-box flex flex-col items-center justify-center text-lg font-bold text-slate-600 shadow-sm uppercase tracking-wide">Elevator<br>1-4</div>
-                        <!-- ดันห้องน้ำไปทางขวา -->
+                        <!-- Elevator: ปรับใช้ Arbitrary Value w-[42.9rem] ตามที่คุณกะไว้ -->
+                        <div class="bg-slate-200 border border-slate-300 w-[42.9rem] sharp-box flex flex-col items-center justify-center text-lg font-bold text-slate-600 shadow-sm uppercase tracking-wide">Elevator<br>1-4</div>
                         <div class="bg-pink-100 border border-pink-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-pink-600 shadow-sm uppercase tracking-wider">Ladies' Room</div>
                         <div class="bg-blue-100 border border-blue-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-blue-600 shadow-sm uppercase tracking-wider">Gents' Room</div>
                         <div class="bg-teal-100 border border-teal-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-teal-600 shadow-sm uppercase tracking-wider">Athlete's Room</div>
@@ -153,10 +151,10 @@
                     </div>
                     
                     <div class="w-full bg-slate-100 border border-slate-200 h-28 sharp-box flex flex-col justify-center px-10 text-slate-300 font-black tracking-[0.5em] relative">
-                         <!-- Merch และ Register ขยับไปทางขวา และขยายขนาด -->
-                        <div class="flex gap-6 mb-2 ml-32 relative z-10">
-                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-8 py-3 sharp-box text-base font-bold tracking-wider shadow-sm uppercase inline-block">Merch Zone</div>
-                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-8 py-3 sharp-box text-base font-bold tracking-wider shadow-sm uppercase inline-block">Register Zone</div>
+                        <!-- Merch และ Register: ปรับ margin-left และขนาด font -->
+                        <div class="flex gap-6 mb-2 ml-[3.7rem] relative z-10">
+                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-8 py-3 sharp-box text-[1.5rem] leading-[1.5rem] font-bold tracking-wider shadow-sm uppercase inline-block">Merch Zone</div>
+                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-8 py-3 sharp-box text-[1.5rem] leading-[1.5rem] font-bold tracking-wider shadow-sm uppercase inline-block">Register Zone</div>
                         </div>
                         <span class="text-4xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-slate-300 tracking-[1em] z-0">HALLWAY</span>
                     </div>
@@ -165,17 +163,17 @@
                 <!-- โซนบูธซ้าย-ขวา และ อัฒจันทร์ตรงกลาง -->
                 <div class="flex gap-16 items-stretch w-full justify-center px-16 relative">
                     
-                    <!-- ทางเข้าหลักและ Staff Entrance (ปรับความยาว) -->
-                     <!-- Main Entrance ลากยาวไปทางขวา -->
-                     <div class="absolute -top-12 left-16 bg-lime-400 border border-lime-500 text-lime-900 w-[500px] h-12 sharp-box flex items-center justify-center font-bold text-lg tracking-widest uppercase shadow-sm z-10">Main Entrance</div>
-                     <!-- Staff Entrance ลากยาวมาทางซ้าย -->
-                     <div class="absolute -top-12 right-16 bg-lime-400 border border-lime-500 text-lime-900 w-[400px] h-12 sharp-box flex items-center justify-center font-bold text-lg tracking-widest uppercase shadow-sm z-10">Staff Entrance</div>
+                    <!-- ทางเข้าหลักและ Staff Entrance -->
+                     <!-- Main Entrance: ปรับ left, width และ font-size -->
+                     <div class="absolute -top-12 left-[3.8rem] bg-lime-400 border border-lime-500 text-lime-900 w-[690px] h-12 sharp-box flex items-center justify-center font-bold text-[1.5rem] leading-[1.75rem] tracking-widest uppercase shadow-sm z-10">Main Entrance</div>
+                     <!-- Staff Entrance: ปรับ right และ font-size ให้เท่ากัน -->
+                     <div class="absolute -top-12 right-[17rem] bg-lime-400 border border-lime-500 text-lime-900 w-[400px] h-12 sharp-box flex items-center justify-center font-bold text-[1.5rem] leading-[1.75rem] tracking-widest uppercase shadow-sm z-10">Staff Entrance</div>
 
                     <!-- บูธฝั่งซ้าย (Left Surrounding) -->
                     <div class="w-48 flex flex-col gap-6 py-4">
                         <div class="bg-purple-100 border border-purple-200 text-purple-600 h-48 sharp-box flex items-center justify-center font-black text-xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">First Aid Unit</div>
                         <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-1 sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">Sponsor Booth</div>
-                        <!-- Marshalling Area ปรับตัวอักษรให้เล็กลงนิดนึงและจัดกลาง -->
+                        <!-- Marshalling Area: ให้แสดงผลตรงกลางโดยไม่ล้นกรอบ (ลด font size เป็น text-lg เท่าเดิม) -->
                         <div class="bg-lime-200 border border-lime-300 text-lime-800 h-[180px] mt-auto sharp-box flex items-center justify-center font-black text-lg uppercase tracking-widest shadow-sm text-center px-2" style="writing-mode: vertical-rl; transform: rotate(180deg);">Marshalling Area</div>
                     </div>
 
@@ -184,9 +182,10 @@
                         <!-- โค้ด JS จะวาดที่นั่งและสนามตรงนี้ -->
                     </div>
 
-                    <!-- บูธฝั่งขวา (บีบความกว้างลง) -->
+                    <!-- บูธฝั่งขวา -->
                     <div class="w-32 flex flex-col gap-6 py-4">
-                        <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-[1.5] sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl;">Photo Booth</div>
+                        <!-- Photo Booth: ปรับ flex ratio เป็น 0.35 ตามระบุ -->
+                        <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-[0.35] sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl;">Photo Booth</div>
                         <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-1 sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl;">Snack Booth</div>
                     </div>
 
@@ -195,7 +194,6 @@
         </div>
     </main>
 
-    <!-- แผงควบคุม (Sidebar) -->
     <aside id="sidebar" class="fixed top-0 right-0 w-full md:w-[380px] bg-white border-l border-slate-200 shadow-2xl z-[200] flex flex-col h-full transform translate-x-full">
         <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">จัดการที่นั่ง</h2>
@@ -268,9 +266,9 @@
         const mapContainer = document.getElementById('seating-core');
         const viewportContainer = document.getElementById('stadium-map');
 
-        // --- ระบบ Pan & Zoom (ปรับค่าเริ่มต้นให้พอดีจอ) ---
+        // --- ระบบ Pan & Zoom ---
         const viewport = document.getElementById('map-viewport');
-        const minScale = 0.35; // ลดขนาดเริ่มต้นเพื่อให้พอดีจอโดยไม่ต้องซูมออกเอง
+        const minScale = 0.35; 
         let scale = minScale; 
         let panX = 0, panY = 0;
         let isDragging = false, startX, startY;
@@ -442,8 +440,8 @@
                             const tableDiv = document.createElement('div');
                             tableDiv.className = 'absolute top-0 left-0 w-full bg-slate-700 sharp-box flex items-center justify-center text-white shadow-sm z-10';
                             tableDiv.style.height = 'calc((var(--cell-size) * 2) + var(--cell-gap))';
-                            // ปรับตัวหนังสือ Table Officials ให้ใหญ่ขึ้น
-                            tableDiv.innerHTML = "<span class='tracking-[0.1em] text-lg font-bold text-slate-100 uppercase'>Table Officials</span>";
+                            // ปรับ Table Officials ให้ตัวใหญ่ขึ้นและคมชัด
+                            tableDiv.innerHTML = "<span class='tracking-[0.1em] text-[1.2rem] font-bold text-slate-100 uppercase'>Table Officials</span>";
                             tableContainer.appendChild(tableDiv);
                         } else if (index === 1) {
                             tableContainer.style.height = 'var(--cell-size)';

@@ -6,7 +6,7 @@
     <title>FeluFest #1 - Master Seating Map</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Prompt:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Prompt:wght@400;600;700;800&display=swap');
 
         body { font-family: 'Prompt', 'Inter', sans-serif; overscroll-behavior: none; }
         
@@ -57,7 +57,7 @@
             box-sizing: border-box;
         }
 
-        /* สถานะเก้าอี้ */
+        /* สถานะต่างๆ ของเก้าอี้ */
         .seat.available { background-color: #ffffff; }
         .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
         .seat.blocked:hover { color: white; transform: none; }
@@ -68,11 +68,12 @@
         .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; box-shadow: inset 0 -3px 0 #92400e; }
         .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; box-shadow: inset 0 -3px 0 #9d174d; }
 
-        /* Pan & Zoom */
+        /* ระบบ Responsive และ Zoom */
         #map-viewport { cursor: grab; }
         #map-viewport.panning { cursor: grabbing; }
         #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #legend-wrapper { transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         body.mobile-pan-mode .seat { pointer-events: none; }
 
         @media (min-width: 768px) {
@@ -81,9 +82,6 @@
             body.sidebar-open #zoom-controls { right: 412px; }
             #mobile-pan-toggle { display: none; } 
         }
-
-        /* แก้อาการล้นจอและจัดให้อยู่ตรงกลางของแผนที่ */
-        #stadium-map { width: max-content; }
     </style>
 </head>
 <body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800 relative w-full select-none">
@@ -98,11 +96,13 @@
     
     <!-- ปุ่มสลับโหมด Pan บนมือถือ -->
     <button id="mobile-pan-toggle" class="fixed bottom-8 left-8 z-[90] bg-white text-slate-700 shadow-md border border-slate-200 px-4 py-3 rounded-full flex items-center gap-2 hover:bg-slate-50 transition-all focus:outline-none font-bold text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
         <span>เลื่อนผัง</span>
     </button>
 
-    <!-- กล่องควบคุมการซูม -->
+    <!-- กล่องควบคุมการซูมหน้าจอ -->
     <div id="zoom-controls" class="fixed bottom-28 right-8 z-[90] flex flex-col gap-2 transition-all duration-300">
         <button id="zoom-in" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">+</button>
         <button id="zoom-out" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">-</button>
@@ -111,7 +111,9 @@
     <!-- Floating Legend -->
     <div id="legend-wrapper" class="fixed bottom-8 right-8 z-[100] group">
         <button class="bg-indigo-600 text-white shadow-lg shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
         </button>
 
         <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
@@ -143,77 +145,51 @@
 
         <div id="map-viewport" class="w-full h-full absolute inset-0 flex items-center justify-center">
             
-            <!-- MASTER CONTAINER -->
-            <div id="stadium-map" class="flex flex-col items-center gap-6 bg-slate-50 p-16 rounded-[3rem] border border-slate-200 shadow-xl transition-transform duration-75 origin-center will-change-transform min-w-max">
+            <!-- คอนเทนเนอร์หลัก (Master Map Wrapper) -->
+            <div id="stadium-map" class="flex flex-col items-center bg-slate-50 p-16 rounded-[3rem] border border-slate-200 shadow-xl transition-transform duration-75 origin-center will-change-transform min-w-max">
                 
-                <!-- 1. โซนห้องน้ำและโถงทางเดิน (Top) -->
-                <div class="w-full max-w-[2588px] flex flex-col gap-4">
-                    <!-- แถวห้องน้ำ -->
-                    <div class="flex gap-4 h-24 w-full">
-                        <div class="bg-[#e2e8f0] border border-[#cbd5e1] w-36 rounded-xl flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm uppercase tracking-wider text-center leading-tight">Elevator<br>1-4</div>
-                        <div class="bg-[#fce7f3] border border-[#fbcfe8] flex-[1.2] rounded-xl flex items-center justify-center text-lg font-black text-[#be185d] shadow-sm uppercase tracking-[0.2em]">Ladies' Room</div>
-                        <div class="bg-[#e0e7ff] border border-[#c7d2fe] flex-[1.2] rounded-xl flex items-center justify-center text-lg font-black text-[#4338ca] shadow-sm uppercase tracking-[0.2em]">Gents' Room</div>
-                        <div class="bg-[#ccfbf1] border border-[#99f6e4] flex-[1.2] rounded-xl flex items-center justify-center text-lg font-black text-[#0f766e] shadow-sm uppercase tracking-[0.2em]">Athlete's Room</div>
-                        <div class="bg-[#fef3c7] border border-[#fde68a] flex-[1.2] rounded-xl flex items-center justify-center text-lg font-black text-[#b45309] shadow-sm uppercase tracking-[0.2em]">Cloakroom</div>
+                <!-- โซนห้องน้ำและโถงทางเดิน (Top Surrounding) -->
+                <div class="w-full flex flex-col gap-6 mb-16 px-16">
+                    <div class="flex gap-6 h-48 w-full">
+                        <div class="bg-slate-200 border-4 border-slate-300 w-64 rounded-2xl flex flex-col items-center justify-center text-xl font-bold text-slate-600 shadow-sm uppercase tracking-wide">Elevator<br>1-4</div>
+                        <div class="bg-pink-100 border-4 border-pink-200 flex-1 rounded-2xl flex items-center justify-center text-3xl font-black text-pink-600 shadow-sm uppercase tracking-widest">Ladies' Room</div>
+                        <div class="bg-blue-100 border-4 border-blue-200 flex-1 rounded-2xl flex items-center justify-center text-3xl font-black text-blue-600 shadow-sm uppercase tracking-widest">Gents' Room</div>
+                        <div class="bg-teal-100 border-4 border-teal-200 flex-1 rounded-2xl flex items-center justify-center text-3xl font-black text-teal-600 shadow-sm uppercase tracking-widest">Athlete's Room</div>
+                        <div class="bg-amber-100 border-4 border-amber-200 flex-1 rounded-2xl flex items-center justify-center text-3xl font-black text-amber-700 shadow-sm uppercase tracking-widest">Cloakroom</div>
                     </div>
-                    <!-- แถว Hallway -->
-                    <div class="w-full bg-slate-100/80 border border-slate-200 h-16 rounded-xl flex items-center justify-between px-6 shadow-sm relative">
-                        <div class="flex gap-4 z-10">
-                            <span class="bg-[#ecfccb] border border-[#d9f99d] text-[#4d7c0f] px-5 py-2 rounded-lg text-xs font-bold tracking-widest uppercase shadow-sm">Merch Zone</span>
-                            <span class="bg-[#ecfccb] border border-[#d9f99d] text-[#4d7c0f] px-5 py-2 rounded-lg text-xs font-bold tracking-widest uppercase shadow-sm">Register Zone</span>
+                    <div class="w-full bg-slate-200/50 border-4 border-slate-300 h-32 rounded-2xl flex items-center justify-between px-10 text-slate-400 font-black tracking-[1em] shadow-inner relative">
+                        <div class="flex gap-6 z-10">
+                            <span class="bg-lime-200 border-4 border-lime-300 text-lime-800 px-8 py-4 rounded-xl text-lg font-bold tracking-widest shadow-sm uppercase">Merch Zone</span>
+                            <span class="bg-lime-200 border-4 border-lime-300 text-lime-800 px-8 py-4 rounded-xl text-lg font-bold tracking-widest shadow-sm uppercase">Register Zone</span>
                         </div>
-                        <div class="absolute inset-0 flex items-center justify-center z-0">
-                            <span class="text-2xl font-black tracking-[1em] text-slate-300">HALLWAY</span>
-                        </div>
-                        <div class="z-10">
-                            <span class="bg-[#ecfccb] border border-[#d9f99d] text-[#4d7c0f] px-5 py-2 rounded-lg text-xs font-bold tracking-widest uppercase shadow-sm">Staff Entrance</span>
-                        </div>
+                        <span class="text-5xl opacity-50 absolute left-1/2 transform -translate-x-1/2">HALLWAY</span>
+                        <span class="bg-lime-200 border-4 border-lime-300 text-lime-800 px-8 py-4 rounded-xl text-lg font-bold tracking-widest shadow-sm uppercase z-10">Staff Entrance</span>
                     </div>
                 </div>
 
-                <!-- 2. โซนกลาง (อัฒจันทร์บน + สนาม + บูธซ้ายขวา) -->
-                <div class="flex gap-10 items-stretch justify-center w-full">
+                <!-- โซนบูธซ้าย-ขวา และ อัฒจันทร์ตรงกลาง -->
+                <div class="flex gap-16 items-stretch w-full justify-center">
                     
-                    <!-- บูธฝั่งซ้าย (Left) -->
-                    <div class="w-[140px] flex flex-col gap-6">
-                        <div class="bg-[#ecfccb] border border-[#d9f99d] text-[#4d7c0f] h-20 rounded-xl flex items-center justify-center font-bold text-sm text-center leading-relaxed shadow-sm uppercase tracking-wider">Main<br>Entrance</div>
-                        <div class="bg-[#f3e8ff] border border-[#e9d5ff] text-[#7e22ce] h-48 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm uppercase tracking-widest" style="writing-mode: vertical-rl; transform: rotate(180deg);">First Aid Unit</div>
-                        <div class="bg-[#f3e8ff] border border-[#e9d5ff] text-[#7e22ce] flex-1 rounded-xl flex items-center justify-center font-black text-xl tracking-[0.3em] shadow-sm uppercase" style="writing-mode: vertical-rl; transform: rotate(180deg);">Sponsor Booth</div>
-                        <div class="bg-[#ecfccb] border border-[#d9f99d] text-[#4d7c0f] h-40 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm uppercase tracking-widest" style="writing-mode: vertical-rl; transform: rotate(180deg);">Marshalling Area</div>
+                    <!-- บูธฝั่งซ้าย (Left Surrounding) -->
+                    <div class="w-56 flex flex-col gap-8 py-8">
+                        <div class="bg-lime-200 border-4 border-lime-300 text-lime-800 h-32 rounded-2xl flex items-center justify-center font-bold text-2xl text-center uppercase leading-tight shadow-sm">Main<br>Entrance</div>
+                        <div class="bg-purple-100 border-4 border-purple-200 text-purple-600 h-64 rounded-2xl flex items-center justify-center font-black text-3xl uppercase tracking-[0.2em] shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">First Aid Unit</div>
+                        <div class="bg-purple-100 border-4 border-purple-200 text-purple-600 flex-1 rounded-2xl flex items-center justify-center font-black text-4xl uppercase tracking-[0.2em] shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">Sponsor Booth</div>
+                        <div class="bg-lime-200 border-4 border-lime-300 text-lime-800 h-72 rounded-2xl flex items-center justify-center font-black text-3xl uppercase tracking-[0.2em] shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">Marshalling Area</div>
                     </div>
 
-                    <!-- แกนกลาง (Center Core) -->
-                    <div class="flex flex-col gap-8 items-center w-[1844px]">
-                        <!-- โซนที่นั่ง A-E -->
-                        <div id="top-zones-container" class="flex flex-col gap-1.5 w-full"></div>
-
-                        <!-- สนามและเวที -->
-                        <div class="w-full flex gap-8 h-[400px]">
-                            <div class="flex-1 bg-yellow-50 border-[3px] border-yellow-400/50 rounded-2xl flex flex-col justify-center items-center relative shadow-sm overflow-hidden">
-                                <div class="absolute inset-0 flex justify-center"><div class="w-[2px] h-full bg-yellow-400/50 border-dashed"></div></div>
-                                <div class="absolute w-40 h-40 border-[3px] border-yellow-400/50 rounded-full flex items-center justify-center"></div>
-                                <span class="z-10 font-bold text-yellow-800 text-3xl tracking-[0.4em] uppercase bg-white/90 px-10 py-4 rounded-full shadow-sm backdrop-blur-sm">COURT (สนามกีฬา)</span>
-                            </div>
-                            <!-- MAIN STAGE -->
-                            <div class="w-[360px] h-full bg-[#0f172a] rounded-3xl border-4 border-slate-700 shadow-[0_15px_40px_rgba(15,23,42,0.4)] flex items-center justify-center relative overflow-hidden">
-                                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60"></div>
-                                <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-60"></div>
-                                <span class="z-10 tracking-[0.3em] text-5xl font-black text-slate-100 drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] uppercase">MAIN STAGE</span>
-                            </div>
-                        </div>
+                    <!-- แกนกลาง: อัฒจันทร์และสนาม (Seating Core) -->
+                    <div id="seating-core" class="flex flex-col gap-1.5 items-center w-full">
+                        <!-- โค้ด JS จะวาดที่นั่งและสนามตรงนี้ -->
                     </div>
 
-                    <!-- บูธฝั่งขวา (Right) -->
-                    <div class="w-[140px] flex flex-col gap-6">
-                        <div class="bg-[#f3e8ff] border border-[#e9d5ff] text-[#7e22ce] flex-[1.2] rounded-xl flex items-center justify-center font-black text-xl tracking-[0.3em] shadow-sm uppercase" style="writing-mode: vertical-rl;">Photo Booth</div>
-                        <div class="bg-[#f3e8ff] border border-[#e9d5ff] text-[#7e22ce] flex-1 rounded-xl flex items-center justify-center font-black text-xl tracking-[0.3em] shadow-sm uppercase" style="writing-mode: vertical-rl;">Snack Booth</div>
+                    <!-- บูธฝั่งขวา (Right Surrounding) -->
+                    <div class="w-56 flex flex-col gap-8 py-8">
+                        <div class="bg-purple-100 border-4 border-purple-200 text-purple-600 flex-[1.5] rounded-2xl flex items-center justify-center font-black text-4xl uppercase tracking-[0.2em] shadow-sm" style="writing-mode: vertical-rl;">Photo Booth</div>
+                        <div class="bg-purple-100 border-4 border-purple-200 text-purple-600 flex-1 rounded-2xl flex items-center justify-center font-black text-4xl uppercase tracking-[0.2em] shadow-sm" style="writing-mode: vertical-rl;">Snack Booth</div>
                     </div>
 
                 </div>
-
-                <!-- 3. โซนล่างสุด (อัฒจันทร์ F-L) -->
-                <div id="bottom-zones-container" class="flex flex-col gap-1.5 w-full max-w-[2588px] mt-2"></div>
-
             </div>
         </div>
     </main>
@@ -287,9 +263,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        const mapContainer = document.getElementById('seating-core');
+        const viewportContainer = document.getElementById('stadium-map');
 
         // --- ระบบ Pan & Zoom ---
-        const mapContainer = document.getElementById('stadium-map');
         const viewport = document.getElementById('map-viewport');
         const minScale = 0.5; 
         let scale = minScale; 
@@ -298,7 +276,7 @@
         let initialDistance = null, initialScale = null;
 
         function updateTransform() {
-            mapContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            viewportContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
         }
         updateTransform();
 
@@ -426,8 +404,7 @@
             "(*******)*****|************|************|************|************|************|*****(*******)"  
         ];
 
-        function renderStadiumSide(layoutArray, zoneNamesArray, isTopSide, containerId) {
-            const container = document.getElementById(containerId);
+        function renderStadiumSide(layoutArray, zoneNamesArray, isTopSide) {
             layoutArray.forEach((rowStr, index) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'flex gap-4 justify-center mb-1 w-full';
@@ -448,7 +425,7 @@
                     
                     if ((isTopSide && index === 0) || (!isTopSide && index === 5)) {
                         const zoneLabel = document.createElement('div');
-                        zoneLabel.className = `absolute ${isTopSide ? '-top-12' : '-bottom-12'} left-1/2 transform -translate-x-1/2 text-slate-400 font-black text-sm tracking-[0.2em] bg-white/80 px-5 py-1.5 rounded-full whitespace-nowrap shadow-sm border border-slate-100`;
+                        zoneLabel.className = `absolute ${isTopSide ? '-top-14' : '-bottom-14'} left-1/2 transform -translate-x-1/2 text-slate-400 font-black text-xl tracking-[0.2em] bg-white/80 px-6 py-2 rounded-full whitespace-nowrap border border-slate-200 shadow-sm`;
                         zoneLabel.innerText = `ZONE ${zoneName}`;
                         zoneContainer.appendChild(zoneLabel);
                     }
@@ -462,9 +439,9 @@
                         
                         if (index === 0) {
                             const tableDiv = document.createElement('div');
-                            tableDiv.className = 'absolute top-0 left-0 w-full bg-[#334155] rounded-xl flex items-center justify-center text-white shadow-md z-10';
+                            tableDiv.className = 'absolute top-0 left-0 w-full bg-slate-700 rounded-lg flex items-center justify-center text-white border-[3px] border-slate-600 shadow-md z-10';
                             tableDiv.style.height = 'calc((var(--cell-size) * 2) + var(--cell-gap))';
-                            tableDiv.innerHTML = "<span class='tracking-[0.2em] text-sm font-bold text-slate-200 uppercase'>Table Officials</span>";
+                            tableDiv.innerHTML = "<span class='tracking-[0.3em] text-base font-black text-slate-200 uppercase'>Table Officials</span>";
                             tableContainer.appendChild(tableDiv);
                         } else if (index === 1) {
                             tableContainer.style.height = 'var(--cell-size)';
@@ -509,12 +486,42 @@
                 rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-sm';
                 rowLabelRight.innerText = rowLetter;
                 rowDiv.appendChild(rowLabelRight);
-                container.appendChild(rowDiv);
+                mapContainer.appendChild(rowDiv);
             });
         }
 
-        renderStadiumSide(topZonesLayout, topZoneNames, true, 'top-zones-container');
-        renderStadiumSide(bottomZonesLayout, bottomZoneNames, false, 'bottom-zones-container');
+        renderStadiumSide(topZonesLayout, topZoneNames, true);
+
+        // --- ส่วนของ Court และ Main Stage แนวนอน ---
+        const centerArea = document.createElement('div');
+        centerArea.className = 'w-full h-[500px] flex gap-12 my-20 relative flex-shrink-0 justify-center px-[40px]';
+        
+        // สนามกีฬา
+        const court = document.createElement('div');
+        court.className = 'flex-1 bg-yellow-50 border-[4px] border-yellow-400/50 rounded-3xl flex flex-col justify-center items-center relative shadow-sm overflow-hidden';
+        court.innerHTML = `
+            <div class="absolute inset-0 flex justify-center"><div class="w-[4px] h-full bg-yellow-400/50 border-dashed"></div></div>
+            <div class="absolute w-56 h-56 border-[4px] border-yellow-400/50 rounded-full flex items-center justify-center"></div>
+            <span class="z-10 font-black text-yellow-800 text-4xl tracking-[0.5em] uppercase bg-white/90 px-12 py-5 rounded-full shadow-sm backdrop-blur-sm">COURT (สนามกีฬา)</span>
+        `;
+        
+        // เวทีฝั่งขวา
+        const mainStage = document.createElement('div');
+        mainStage.className = 'w-[450px] h-full bg-slate-900 rounded-3xl border-[6px] border-slate-700 shadow-[0_20px_50px_rgba(15,23,42,0.5)] flex items-center justify-center relative overflow-hidden';
+        mainStage.innerHTML = `
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-80"></div>
+            <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80"></div>
+            <div class="z-10 flex flex-col items-center">
+                <span class="tracking-[0.4em] text-5xl font-black text-slate-100 drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] whitespace-nowrap uppercase">MAIN STAGE</span>
+                <div class="w-24 h-2 bg-indigo-500 mt-6 rounded-full opacity-80"></div>
+            </div>
+        `;
+        
+        centerArea.appendChild(court);
+        centerArea.appendChild(mainStage);
+        mapContainer.appendChild(centerArea);
+
+        renderStadiumSide(bottomZonesLayout, bottomZoneNames, false);
 
 
         // --- ลอจิกเลือกและบันทึกที่นั่ง ---

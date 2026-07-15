@@ -3,77 +3,597 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FeluFest #1 - Master Seating Plan</title>
+    <title>FeluFest #1 - Master Seating Map</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&display=swap');
-        body { font-family: 'Prompt', sans-serif; overscroll-behavior: none; }
-        
-        :root { --cell-size: 26px; --cell-gap: 4px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Prompt:wght@400;600;700;800&display=swap');
 
-        .seat {
-            width: var(--cell-size); height: var(--cell-size);
-            border: 1px solid #cbd5e1;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 8px; font-weight: 700; color: transparent;
-            cursor: pointer; background: #ffffff;
-        }
-        .seat:hover { transform: scale(1.2); border-color: #64748b; z-index: 10; }
-        .seat.blocked { background: #475569; border-color: #334155; }
+        body { font-family: 'Prompt', 'Inter', sans-serif; overscroll-behavior: none; }
         
-        /* สไตล์โซนและบูธ (เอาความโค้งออก ตามคำขอ) */
-        .facility-box { border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-        .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        :root {
+            --cell-size: 26px; 
+            --cell-gap: 4px;
+        }
+
+        .seat-container { display: flex; gap: var(--cell-gap); position: relative; }
+
+        /* เก้าอี้ */
+        .seat {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border-radius: 6px 6px 2px 2px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            border: 1px solid #cbd5e1;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: transparent;
+            box-sizing: border-box;
+            background-color: #ffffff; 
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.03);
+        }
+        .seat:hover {
+            transform: scale(1.3) translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            color: #1e293b;
+            z-index: 50;
+            border-color: #94a3b8;
+        }
+        
+        /* ขั้นบันได */
+        .stair { 
+            width: var(--cell-size); 
+            height: var(--cell-size); 
+            background: repeating-linear-gradient(180deg, #ffffff, #ffffff 4px, #e2e8f0 4px, #e2e8f0 6px); 
+            border-left: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+
+        /* สถานะต่างๆ ของเก้าอี้ */
+        .seat.available { background-color: #ffffff; }
+        .seat.blocked { background-color: #475569; border-color: #334155; cursor: not-allowed; box-shadow: none; opacity: 0.8; }
+        .seat.blocked:hover { color: white; transform: none; }
+        .seat.red { background-color: #ef4444; border-color: #b91c1c; color: white; box-shadow: inset 0 -3px 0 #991b1b;}
+        .seat.purple { background-color: #a855f7; border-color: #7e22ce; color: white; box-shadow: inset 0 -3px 0 #6b21a8;}
+        .seat.blue { background-color: #3b82f6; border-color: #1d4ed8; color: white; box-shadow: inset 0 -3px 0 #1e40af;}
+        .seat.green { background-color: #22c55e; border-color: #15803d; color: white; box-shadow: inset 0 -3px 0 #166534;}
+        .seat.guest { background-color: #f59e0b; border-color: #b45309; color: white; border-radius: 50%; box-shadow: inset 0 -3px 0 #92400e; }
+        .seat.cheer { background-color: #ec4899; border-color: #be185d; color: white; box-shadow: inset 0 -3px 0 #9d174d; }
+
+        /* ระบบ Responsive และ Zoom */
+        #map-viewport { cursor: grab; }
+        #map-viewport.panning { cursor: grabbing; }
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #legend-wrapper { transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        body.mobile-pan-mode .seat { pointer-events: none; }
+
+        @media (min-width: 768px) {
+            body.sidebar-open #map-wrapper { margin-right: 380px; }
+            body.sidebar-open #legend-wrapper { right: 412px; }
+            body.sidebar-open #zoom-controls { right: 412px; }
+            #mobile-pan-toggle { display: none; } 
+        }
+
+        /* รูปแบบกล่องแบบเหลี่ยม */
+        .sharp-box { border-radius: 0 !important; }
     </style>
 </head>
-<body class="bg-slate-50 overflow-hidden h-screen w-full">
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800 relative w-full select-none">
 
-    <main id="map-wrapper" class="w-full h-full overflow-auto p-10">
-        <div id="stadium-map" class="bg-white p-12 border-2 border-slate-200 shadow-sm flex flex-col items-center min-w-max">
-            
-            <!-- ด้านบน: โถงและห้องต่างๆ -->
-            <div class="w-full flex flex-col gap-4 mb-12">
-                <div class="flex gap-4 h-28 w-full">
-                    <div class="facility-box w-48 bg-slate-100 text-slate-500 text-sm">ELEVATOR 1-4</div>
-                    <div class="facility-box flex-1 bg-pink-50 text-pink-600 text-2xl">LADIES' ROOM</div>
-                    <div class="facility-box flex-1 bg-blue-50 text-blue-600 text-2xl">GENTS' ROOM</div>
-                    <div class="facility-box flex-1 bg-teal-50 text-teal-600 text-2xl">ATHLETE'S ROOM</div>
-                    <div class="facility-box flex-1 bg-amber-50 text-amber-700 text-2xl">CLOAKROOM</div>
+    <!-- ปุ่มเปิด Sidebar -->
+    <button id="open-sidebar-btn" class="fixed top-6 right-6 z-[90] bg-white text-slate-700 shadow-md border border-slate-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 hover:scale-105 transition-all focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </button>
+    
+    <!-- ปุ่มสลับโหมด Pan บนมือถือ -->
+    <button id="mobile-pan-toggle" class="fixed bottom-8 left-8 z-[90] bg-white text-slate-700 shadow-md border border-slate-200 px-4 py-3 rounded-full flex items-center gap-2 hover:bg-slate-50 transition-all focus:outline-none font-bold text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        <span>เลื่อนผัง</span>
+    </button>
+
+    <!-- กล่องควบคุมการซูมหน้าจอ -->
+    <div id="zoom-controls" class="fixed bottom-28 right-8 z-[90] flex flex-col gap-2 transition-all duration-300">
+        <button id="zoom-in" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">+</button>
+        <button id="zoom-out" class="bg-white text-slate-700 shadow-md border border-slate-200 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 font-bold text-xl">-</button>
+    </div>
+
+    <!-- Floating Legend -->
+    <div id="legend-wrapper" class="fixed bottom-8 right-8 z-[100] group">
+        <button class="bg-indigo-600 text-white shadow-lg shadow-indigo-200 w-14 h-14 rounded-full flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all duration-300 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+
+        <div class="absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 origin-bottom-right">
+            <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">สัญลักษณ์ที่นั่ง</h3>
+            <div class="flex flex-col gap-3 text-sm font-semibold text-slate-600">
+                <div class="grid grid-cols-2 gap-3">
+                    <span class="flex items-center"><div class="w-4 h-4 bg-white border border-slate-300 mr-2 rounded"></div> ว่าง</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-slate-600 mr-2 rounded"></div> บล็อก</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-amber-500 rounded-full mr-2"></div> แขกรับเชิญ</span>
+                    <span class="flex items-center"><div class="w-4 h-4 bg-pink-500 mr-2 rounded"></div> เชียร์ลีดเดอร์</span>
                 </div>
-                <div class="w-full bg-slate-100 border-2 border-slate-200 h-20 flex items-center justify-between px-8 text-slate-400 font-bold tracking-widest uppercase">
-                    <span class="bg-lime-200 px-4 py-2 text-xs text-lime-900 border border-lime-300">Merch Zone</span>
-                    HALLWAY
-                    <span class="bg-lime-200 px-4 py-2 text-xs text-lime-900 border border-lime-300">Staff Entrance</span>
+                <div class="border-t border-slate-100 pt-3 mt-1 grid grid-cols-2 gap-3">
+                    <span class="flex items-center"><div class="w-3 h-3 bg-red-500 mr-2 rounded-sm shadow-sm"></div> สีแดง</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-purple-500 mr-2 rounded-sm shadow-sm"></div> สีม่วง</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-blue-500 mr-2 rounded-sm shadow-sm"></div> สีน้ำเงิน</span>
+                    <span class="flex items-center"><div class="w-3 h-3 bg-green-500 mr-2 rounded-sm shadow-sm"></div> สีเขียว</span>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- ผังหลัก -->
-            <div class="flex gap-8">
-                <!-- บูธซ้าย -->
-                <div class="w-40 flex flex-col gap-4">
-                    <div class="facility-box h-20 bg-lime-200 text-lime-900 text-xs">MAIN ENTRANCE</div>
-                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-sm text-vertical">FIRST AID UNIT</div>
-                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">SPONSOR BOOTH</div>
-                    <div class="facility-box flex-1 bg-lime-200 text-lime-900 text-sm text-vertical">MARSHALLING AREA</div>
+    <!-- พื้นที่แสดงแผนที่ -->
+    <main id="map-wrapper" class="flex-1 h-full relative w-full bg-slate-100 overflow-hidden transition-all duration-300">
+        
+        <div class="absolute top-6 left-6 z-50 bg-white/90 backdrop-blur px-6 py-3 rounded-xl shadow-sm border border-slate-200 pointer-events-none">
+            <h1 class="text-xl font-black text-slate-900 tracking-tight">FeluFest #1</h1>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Master Seating Map</p>
+        </div>
+
+        <div id="map-viewport" class="w-full h-full absolute inset-0 flex items-center justify-center">
+            
+            <!-- คอนเทนเนอร์หลัก -->
+            <div id="stadium-map" class="flex flex-col items-center bg-slate-50 p-16 rounded-[3rem] border border-slate-200 shadow-xl transition-transform duration-75 origin-center will-change-transform min-w-max">
+                
+                <!-- โซนห้องน้ำและโถงทางเดิน (Top Surrounding) -->
+                <div class="w-full flex flex-col gap-6 mb-16 px-16">
+                    <div class="flex gap-6 h-40 w-full">
+                        <div class="bg-slate-200 border border-slate-300 w-64 sharp-box flex flex-col items-center justify-center text-lg font-bold text-slate-600 shadow-sm uppercase tracking-wide">Elevator<br>1-4</div>
+                        <div class="bg-pink-100 border border-pink-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-pink-600 shadow-sm uppercase tracking-wider">Ladies' Room</div>
+                        <div class="bg-blue-100 border border-blue-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-blue-600 shadow-sm uppercase tracking-wider">Gents' Room</div>
+                        <div class="bg-teal-100 border border-teal-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-teal-600 shadow-sm uppercase tracking-wider">Athlete's Room</div>
+                        <div class="bg-amber-100 border border-amber-200 flex-1 sharp-box flex items-center justify-center text-2xl font-black text-amber-700 shadow-sm uppercase tracking-wider">Cloakroom</div>
+                    </div>
+                    
+                    <!-- โซน Hallway (สีกลืนไปกับพื้นหลัง) -->
+                    <div class="w-full bg-slate-100 border border-slate-200 h-28 sharp-box flex flex-col justify-center px-10 text-slate-300 font-black tracking-[0.5em] relative">
+                         <!-- แถวบนของ Hallway สำหรับ Merch และ Register -->
+                        <div class="flex gap-6 mb-2">
+                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-6 py-2 sharp-box text-sm font-bold tracking-wider shadow-sm uppercase inline-block">Merch Zone</div>
+                             <div class="bg-lime-200 border border-lime-300 text-lime-800 px-6 py-2 sharp-box text-sm font-bold tracking-wider shadow-sm uppercase inline-block">Register Zone</div>
+                        </div>
+                        <span class="text-4xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-slate-300 tracking-[1em]">HALLWAY</span>
+                    </div>
                 </div>
 
-                <!-- อัฒจันทร์และสนาม -->
-                <div id="seating-core" class="flex flex-col gap-1 items-center">
-                    <!-- จาวาสคริปต์จะวาดที่นั่งที่นี่ -->
-                </div>
+                <!-- โซนบูธซ้าย-ขวา และ อัฒจันทร์ตรงกลาง -->
+                <div class="flex gap-16 items-stretch w-full justify-center px-16 relative">
+                    
+                    <!-- ทางเข้าหลักและ Staff Entrance (วางซ้าย-ขวาแยกกัน) -->
+                     <div class="absolute -top-12 left-16 bg-lime-400 border border-lime-500 text-lime-900 w-64 h-12 sharp-box flex items-center justify-center font-bold text-lg tracking-widest uppercase shadow-sm z-10">Main Entrance</div>
+                     <div class="absolute -top-12 right-16 bg-lime-400 border border-lime-500 text-lime-900 w-64 h-12 sharp-box flex items-center justify-center font-bold text-lg tracking-widest uppercase shadow-sm z-10">Staff Entrance</div>
 
-                <!-- บูธขวา -->
-                <div class="w-40 flex flex-col gap-4">
-                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">PHOTO BOOTH</div>
-                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">SNACK BOOTH</div>
+
+                    <!-- บูธฝั่งซ้าย (Left Surrounding) -->
+                    <div class="w-48 flex flex-col gap-6 py-4">
+                        <div class="bg-purple-100 border border-purple-200 text-purple-600 h-48 sharp-box flex items-center justify-center font-black text-xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">First Aid Unit</div>
+                        <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-1 sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">Sponsor Booth</div>
+                        <!-- Marshalling Area สูงเท่ากับโซนอัฒจันทร์ (Zone F) พอดี -->
+                        <div class="bg-lime-200 border border-lime-300 text-lime-800 h-[180px] mt-auto sharp-box flex items-center justify-center font-black text-xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl; transform: rotate(180deg);">Marshalling Area</div>
+                    </div>
+
+                    <!-- แกนกลาง: อัฒจันทร์และสนาม (Seating Core) -->
+                    <div id="seating-core" class="flex flex-col gap-1.5 items-center w-full">
+                        <!-- โค้ด JS จะวาดที่นั่งและสนามตรงนี้ -->
+                    </div>
+
+                    <!-- บูธฝั่งขวา (Right Surrounding) -->
+                    <div class="w-48 flex flex-col gap-6 py-4">
+                        <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-[1.5] sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl;">Photo Booth</div>
+                        <div class="bg-purple-100 border border-purple-200 text-purple-600 flex-1 sharp-box flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-sm" style="writing-mode: vertical-rl;">Snack Booth</div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- แผงควบคุม (Sidebar) -->
+    <aside id="sidebar" class="fixed top-0 right-0 w-full md:w-[380px] bg-white border-l border-slate-200 shadow-2xl z-[200] flex flex-col h-full transform translate-x-full">
+        <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">จัดการที่นั่ง</h2>
+            <button id="close-sidebar-btn" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto">
+            <div id="no-seat-selected" class="text-center py-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                <p class="text-slate-500 font-medium">กรุณาคลิกเลือกเก้าอี้บนแผนที่<br>เพื่อแก้ไขข้อมูล</p>
+            </div>
+
+            <div id="seat-controls" class="hidden flex-col gap-5">
+                <div id="seat-info" class="mb-2">
+                    <p class="text-slate-500 text-sm mb-3 font-medium">1. รหัสที่นั่งที่เลือก</p>
+                    <div class="bg-indigo-50 p-6 rounded-xl text-center border border-indigo-100 shadow-sm">
+                        <span id="selected-seat-id" class="text-4xl font-black text-indigo-700 tracking-wider">-</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm font-bold text-slate-700 block mb-2">2. สถานะ / สีทีม:</label>
+                    <select id="seat-status" class="w-full border border-slate-300 p-3 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all cursor-pointer font-medium text-slate-700 shadow-sm">
+                        <option value="available">⚪ ว่าง (Available)</option>
+                        <option value="blocked">⚫ บล็อก / สตาฟฟ์ (Blocked)</option>
+                        <optgroup label="ผู้ชมทั่วไป">
+                            <option value="red">🔴 ทีมสีแดง</option>
+                            <option value="purple">🟣 ทีมสีม่วง</option>
+                            <option value="blue">🔵 ทีมสีน้ำเงิน</option>
+                            <option value="green">🟢 ทีมสีเขียว</option>
+                        </optgroup>
+                        <optgroup label="บุคคลพิเศษ">
+                            <option value="guest">⭐ แขกรับเชิญ (Guest)</option>
+                            <option value="cheer">💃 เชียร์ลีดเดอร์ (Cheerleader)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-bold text-slate-700 block mb-2">3. ผูกกับผู้ร่วมงาน (User ID / ชื่อ):</label>
+                    <input type="text" id="assigned-user" placeholder="ระบุชื่อผู้ใช้งาน..." class="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm">
+                </div>
+
+                <button id="save-seat-btn" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    บันทึกข้อมูล
+                </button>
+            </div>
+        </div>
+    </aside>
+
     <script type="module">
-        // [โค้ดส่วนของ Firebase และการเรนเดอร์เดิมคงไว้ แต่ปรับให้ยิงข้อมูลเข้า div#seating-core]
-        // การเรนเดอร์เดิมของคุณมีตรรกะการวาดเก้าอี้และโซนอยู่แล้ว นำมาวางที่นี่ได้เลยครับ
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // 🛑🛑 ใส่ Config ของคุณตรงนี้ 🛑🛑
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        const mapContainer = document.getElementById('seating-core');
+        const viewportContainer = document.getElementById('stadium-map');
+
+        // --- ระบบ Pan & Zoom ---
+        const viewport = document.getElementById('map-viewport');
+        const minScale = 0.5; 
+        let scale = minScale; 
+        let panX = 0, panY = 0;
+        let isDragging = false, startX, startY;
+        let initialDistance = null, initialScale = null;
+
+        function updateTransform() {
+            viewportContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+        }
+        updateTransform();
+
+        document.getElementById('zoom-in').onclick = () => { scale = Math.min(scale + 0.1, 2); updateTransform(); };
+        document.getElementById('zoom-out').onclick = () => { scale = Math.max(scale - 0.1, minScale); updateTransform(); };
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            scale += e.deltaY * -0.001;
+            scale = Math.min(Math.max(minScale, scale), 2);
+            updateTransform();
+        }, { passive: false });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.seat') || e.target.closest('button')) return;
+            isDragging = true;
+            viewport.classList.add('panning');
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateTransform();
+        });
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('panning');
+        });
+
+        const panToggleBtn = document.getElementById('mobile-pan-toggle');
+        let isMobilePanMode = false;
+
+        panToggleBtn.addEventListener('click', () => {
+            isMobilePanMode = !isMobilePanMode;
+            if (isMobilePanMode) {
+                document.body.classList.add('mobile-pan-mode');
+                panToggleBtn.classList.replace('bg-white', 'bg-indigo-100');
+                panToggleBtn.classList.replace('text-slate-700', 'text-indigo-700');
+                panToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <span>เลือกเก้าอี้</span>
+                `;
+            } else {
+                document.body.classList.remove('mobile-pan-mode');
+                panToggleBtn.classList.replace('bg-indigo-100', 'bg-white');
+                panToggleBtn.classList.replace('text-indigo-700', 'text-slate-700');
+                panToggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                    <span>เลื่อนผัง</span>
+                `;
+            }
+        });
+
+        viewport.addEventListener('touchstart', (e) => {
+            if (!isMobilePanMode && e.target.closest('.seat')) return; 
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - panX;
+                startY = e.touches[0].clientY - panY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                initialDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                initialScale = scale;
+            }
+        });
+
+        viewport.addEventListener('touchmove', (e) => {
+            if (!isMobilePanMode && e.target.closest('.seat')) return;
+            e.preventDefault();
+            if (isDragging && e.touches.length === 1) {
+                panX = e.touches[0].clientX - startX;
+                panY = e.touches[0].clientY - startY;
+                updateTransform();
+            } else if (e.touches.length === 2 && initialDistance) {
+                const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                scale = initialScale * (currentDistance / initialDistance);
+                scale = Math.min(Math.max(minScale, scale), 2);
+                updateTransform();
+            }
+        }, { passive: false });
+        viewport.addEventListener('touchend', () => { isDragging = false; initialDistance = null; });
+
+
+        // --- ลอจิกเปิด-ปิด Sidebar ---
+        const sidebar = document.getElementById('sidebar');
+        function toggleSidebar(show) {
+            if (show) {
+                sidebar.classList.remove('translate-x-full');
+                document.body.classList.add('sidebar-open');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                document.body.classList.remove('sidebar-open');
+            }
+        }
+        document.getElementById('open-sidebar-btn').addEventListener('click', () => toggleSidebar(true));
+        document.getElementById('close-sidebar-btn').addEventListener('click', () => toggleSidebar(false));
+
+        // --- วาดแผนที่ ---
+        const topZoneNames = ['A', 'B', 'C', 'D', 'E'];
+        const bottomZoneNames = ['F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F']; 
+
+        const topZonesLayout = [
+            "**********|************|************|************|**********",
+            "******--**|************|*****--*****|************|**--******",
+            "******--**|************|*****--*****|************|**--******",
+            "******--**|************|*****--*****|************|**--******",
+            "******--**|************|*****--*****|************|**--******",
+            "******--**|************|*****--*****|************|**--******"
+        ];
+
+        const bottomZonesLayout = [
+            "(*******)*--**|************|******--****|<TABLE>|****--******|************|**--*(*******)", 
+            "(*******)*--**|************|******--****|<TABLE>|****--******|************|**--*(*******)", 
+            "(*******)*--**|************|******--****|************|****--******|************|**--*(*******)", 
+            "(*******)*--**|************|******--****|************|****--******|************|**--*(*******)", 
+            "(*******)*--**|************|******--****|************|****--******|************|**--*(*******)", 
+            "(*******)*****|************|************|************|************|************|*****(*******)"  
+        ];
+
+        function renderStadiumSide(layoutArray, zoneNamesArray, isTopSide) {
+            layoutArray.forEach((rowStr, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-4 justify-center mb-1 w-full';
+                
+                const rowLetter = isTopSide ? rowLetters[5 - index] : rowLetters[index];
+                
+                const rowLabelLeft = document.createElement('div');
+                rowLabelLeft.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-sm';
+                rowLabelLeft.innerText = rowLetter;
+                rowDiv.appendChild(rowLabelLeft);
+
+                const zones = rowStr.split('|');
+
+                zones.forEach((zoneStr, zIdx) => {
+                    const zoneName = zoneNamesArray[zIdx];
+                    const zoneContainer = document.createElement('div');
+                    zoneContainer.className = 'seat-container';
+                    
+                    if ((isTopSide && index === 0) || (!isTopSide && index === 5)) {
+                        const zoneLabel = document.createElement('div');
+                        // เปลี่ยนเป็นกรอบไร้ความมน (sharp-box)
+                        zoneLabel.className = `absolute ${isTopSide ? '-top-14' : '-bottom-14'} left-1/2 transform -translate-x-1/2 text-slate-400 font-bold text-sm tracking-widest bg-white px-6 py-2 sharp-box whitespace-nowrap`;
+                        zoneLabel.innerText = `ZONE ${zoneName}`;
+                        zoneContainer.appendChild(zoneLabel);
+                    }
+
+                    let seatNum = 1;
+                    let isBlind = false;
+
+                    if (zoneStr === '<TABLE>') {
+                        const tableContainer = document.createElement('div');
+                        tableContainer.className = 'w-[calc((var(--cell-size)*12)+(var(--cell-gap)*11))] relative flex justify-center';
+                        
+                        if (index === 0) {
+                            const tableDiv = document.createElement('div');
+                            tableDiv.className = 'absolute top-0 left-0 w-full bg-slate-700 sharp-box flex items-center justify-center text-white shadow-sm z-10';
+                            tableDiv.style.height = 'calc((var(--cell-size) * 2) + var(--cell-gap))';
+                            tableDiv.innerHTML = "<span class='tracking-[0.1em] text-xs font-bold text-slate-100 uppercase'>Table Officials</span>";
+                            tableContainer.appendChild(tableDiv);
+                        } else if (index === 1) {
+                            tableContainer.style.height = 'var(--cell-size)';
+                        }
+                        
+                        rowDiv.appendChild(tableContainer);
+                        return; 
+                    }
+
+                    for (let i = 0; i < zoneStr.length; i++) {
+                        const char = zoneStr[i];
+                        if (char === '(') { isBlind = true; continue; }
+                        if (char === ')') { isBlind = false; continue; }
+                        
+                        if (char === '-') {
+                            const stair = document.createElement('div');
+                            stair.className = 'stair';
+                            zoneContainer.appendChild(stair);
+                        } else if (char === '*') {
+                            const seatNumStr = seatNum.toString().padStart(2, '0');
+                            const seatId = `${zoneName}-${rowLetter}${seatNumStr}`;
+                            
+                            const seat = document.createElement('div');
+                            seat.id = seatId;
+                            seat.title = seatId; 
+                            seat.innerText = seatNumStr; 
+                            
+                            seat.className = `seat ${isBlind ? 'blocked' : 'available'}`;
+                            
+                            seat.addEventListener('pointerdown', (e) => {
+                                if (!isMobilePanMode) selectSeat(seatId);
+                            });
+                            
+                            zoneContainer.appendChild(seat);
+                            seatNum++;
+                        }
+                    }
+                    rowDiv.appendChild(zoneContainer);
+                });
+
+                const rowLabelRight = document.createElement('div');
+                rowLabelRight.className = 'w-8 flex items-center justify-center font-black text-slate-300 text-sm';
+                rowLabelRight.innerText = rowLetter;
+                rowDiv.appendChild(rowLabelRight);
+                mapContainer.appendChild(rowDiv);
+            });
+        }
+
+        renderStadiumSide(topZonesLayout, topZoneNames, true);
+
+        // --- ส่วนของ Court และ Main Stage แนวนอน ---
+        const centerArea = document.createElement('div');
+        centerArea.className = 'w-full h-[500px] flex gap-12 my-20 relative flex-shrink-0 justify-center';
+        
+        // สนามกีฬา
+        const court = document.createElement('div');
+        court.className = 'flex-1 bg-yellow-50 border-[2px] border-yellow-400/50 sharp-box flex flex-col justify-center items-center relative shadow-sm overflow-hidden';
+        court.innerHTML = `
+            <div class="absolute inset-0 flex justify-center"><div class="w-[2px] h-full bg-yellow-400/50 border-dashed"></div></div>
+            <div class="absolute w-56 h-56 border-[2px] border-yellow-400/50 rounded-full flex items-center justify-center"></div>
+            <span class="z-10 font-bold text-yellow-800 text-3xl tracking-[0.3em] uppercase bg-white/90 px-12 py-5 rounded-full shadow-sm backdrop-blur-sm">COURT (สนามกีฬา)</span>
+        `;
+        
+        // เวทีฝั่งขวา
+        const mainStage = document.createElement('div');
+        mainStage.className = 'w-[450px] h-full bg-slate-900 sharp-box shadow-xl flex items-center justify-center relative overflow-hidden';
+        mainStage.innerHTML = `
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-80"></div>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80"></div>
+            <div class="z-10 flex flex-col items-center">
+                <span class="tracking-[0.2em] text-4xl font-black text-slate-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] whitespace-nowrap uppercase">MAIN STAGE</span>
+                <div class="w-16 h-1 bg-indigo-500 mt-4 rounded-full opacity-80"></div>
+            </div>
+        `;
+        
+        centerArea.appendChild(court);
+        centerArea.appendChild(mainStage);
+        mapContainer.appendChild(centerArea);
+
+        renderStadiumSide(bottomZonesLayout, bottomZoneNames, false);
+
+
+        // --- ลอจิกเลือกและบันทึกที่นั่ง ---
+        let currentSelectedSeat = null;
+        
+        function selectSeat(seatId) {
+            currentSelectedSeat = seatId;
+            document.getElementById('selected-seat-id').innerText = seatId;
+            document.getElementById('no-seat-selected').classList.add('hidden');
+            document.getElementById('seat-controls').classList.remove('hidden');
+            document.getElementById('seat-controls').classList.add('flex');
+            
+            toggleSidebar(true);
+
+            const seatEl = document.getElementById(seatId);
+            const statusSelect = document.getElementById('seat-status');
+            
+            if(seatEl.classList.contains('blocked')) statusSelect.value = 'blocked';
+            else if(seatEl.classList.contains('red')) statusSelect.value = 'red';
+            else if(seatEl.classList.contains('purple')) statusSelect.value = 'purple';
+            else if(seatEl.classList.contains('blue')) statusSelect.value = 'blue';
+            else if(seatEl.classList.contains('green')) statusSelect.value = 'green';
+            else if(seatEl.classList.contains('guest')) statusSelect.value = 'guest';
+            else if(seatEl.classList.contains('cheer')) statusSelect.value = 'cheer';
+            else statusSelect.value = 'available';
+
+            document.getElementById('assigned-user').value = "";
+        }
+
+        document.getElementById('save-seat-btn').addEventListener('click', () => {
+            if(!currentSelectedSeat) return;
+            
+            const status = document.getElementById('seat-status').value;
+            const assignedUser = document.getElementById('assigned-user').value;
+            const seatEl = document.getElementById(currentSelectedSeat);
+            
+            seatEl.className = `seat ${status}`;
+            seatEl.style.boxShadow = "0 0 0 4px rgba(79, 70, 229, 0.4)"; 
+            setTimeout(() => { seatEl.style.boxShadow = ""; }, 500);
+
+            setDoc(doc(db, "seats", currentSelectedSeat), {
+                status: status,
+                assigned_to: assignedUser,
+                updated_at: new Date()
+            }).catch(error => {
+                console.error("เซฟไม่สำเร็จ:", error);
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองเซฟใหม่อีกครั้ง");
+            });
+        });
+
+        onSnapshot(collection(db, "seats"), (snapshot) => {
+            snapshot.forEach((doc) => {
+                const seatData = doc.data();
+                const seatEl = document.getElementById(doc.id);
+                if(seatEl && currentSelectedSeat !== doc.id) {
+                    seatEl.className = `seat ${seatData.status || 'available'}`;
+                }
+            });
+        });
+
+        window.selectSeat = selectSeat;
     </script>
 </body>
 </html>

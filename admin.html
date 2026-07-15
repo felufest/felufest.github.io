@@ -494,7 +494,7 @@
 
         // --- ส่วนของ Court และ Main Stage แนวนอน ---
         const centerArea = document.createElement('div');
-        centerArea.className = 'w-full h-[500px] flex gap-12 my-20 relative flex-shrink-0 justify-center';
+        centerArea.className = 'w-[2400px] h-[500px] flex gap-12 my-20 relative flex-shrink-0 justify-center';
         
         const court = document.createElement('div');
         court.className = 'flex-1 bg-yellow-50 border-[2px] border-yellow-400/50 sharp-box flex flex-col justify-center items-center relative shadow-sm overflow-hidden';
@@ -505,12 +505,12 @@
         `;
         
         const mainStage = document.createElement('div');
-        mainStage.className = 'w-[450px] h-full bg-slate-900 sharp-box shadow-xl flex items-center justify-center relative overflow-hidden';
+        mainStage.className = 'w-[270px] h-full bg-slate-900 sharp-box shadow-xl flex items-center justify-center relative overflow-hidden';
         mainStage.innerHTML = `
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-80"></div>
             <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80"></div>
             <div class="z-10 flex flex-col items-center">
-                <span class="tracking-[0.2em] text-4xl font-black text-slate-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] whitespace-nowrap uppercase">MAIN STAGE</span>
+                <span class="tracking-[0.2em] text-3xl font-black text-slate-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] whitespace-nowrap uppercase">MAIN STAGE</span>
                 <div class="w-16 h-1 bg-indigo-500 mt-4 rounded-full opacity-80"></div>
             </div>
         `;

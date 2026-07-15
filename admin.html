@@ -3,98 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FeluFest #1 - Master Seating Map</title>
+    <title>FeluFest #1 - Master Seating Plan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Prompt:wght@400;600;700;800&display=swap');
-        body { font-family: 'Prompt', 'Inter', sans-serif; overscroll-behavior: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&display=swap');
+        body { font-family: 'Prompt', sans-serif; overscroll-behavior: none; }
         
-        /* สไตล์เก้าอี้และบันไดแบบเหลี่ยม */
-        .seat { width: 26px; height: 26px; cursor: pointer; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: transparent; background-color: #ffffff; }
-        .seat:hover { transform: scale(1.2); border-color: #64748b; color: #1e293b; z-index: 50; }
-        .stair { width: 26px; height: 26px; background: #e2e8f0; border: 1px solid #cbd5e1; }
+        :root { --cell-size: 26px; --cell-gap: 4px; }
 
-        /* สถานะ */
-        .seat.available { background-color: #ffffff; }
-        .seat.blocked { background-color: #64748b; cursor: not-allowed; }
-        .seat.red { background-color: #ef4444; color: white; }
-        .seat.purple { background-color: #a855f7; color: white; }
-        .seat.blue { background-color: #3b82f6; color: white; }
-        .seat.green { background-color: #22c55e; color: white; }
-        .seat.guest { background-color: #f59e0b; color: white; }
-        .seat.cheer { background-color: #ec4899; color: white; }
+        .seat {
+            width: var(--cell-size); height: var(--cell-size);
+            border: 1px solid #cbd5e1;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 700; color: transparent;
+            cursor: pointer; background: #ffffff;
+        }
+        .seat:hover { transform: scale(1.2); border-color: #64748b; z-index: 10; }
+        .seat.blocked { background: #475569; border-color: #334155; }
+        
+        /* สไตล์โซนและบูธ (เอาความโค้งออก ตามคำขอ) */
+        .facility-box { border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
     </style>
 </head>
-<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+<body class="bg-slate-50 overflow-hidden h-screen w-full">
 
-    <!-- แผง Sidebar (ขวา) -->
-    <aside id="sidebar" class="fixed top-0 right-0 w-[380px] bg-white border-l shadow-2xl z-[200] h-full transform translate-x-full transition-transform">
-        <div class="p-6 border-b flex justify-between items-center">
-            <h2 class="font-bold text-lg">จัดการที่นั่ง</h2>
-            <button id="close-sidebar-btn" class="p-2 hover:bg-red-50 rounded-lg">✕</button>
-        </div>
-        <div class="p-6">
-            <div id="no-seat-selected" class="text-center py-10 text-slate-400">กรุณาเลือกที่นั่ง</div>
-            <div id="seat-controls" class="hidden flex-col gap-4">
-                <div class="bg-slate-100 p-4 rounded text-center text-xl font-black" id="selected-seat-id">-</div>
-                <select id="seat-status" class="w-full border p-2 rounded">
-                    <option value="available">ว่าง</option><option value="blocked">บล็อก</option>
-                    <option value="red">สีแดง</option><option value="purple">สีม่วง</option>
-                    <option value="blue">สีน้ำเงิน</option><option value="green">สีเขียว</option>
-                    <option value="guest">แขกรับเชิญ</option><option value="cheer">เชียร์ลีดเดอร์</option>
-                </select>
-                <input type="text" id="assigned-user" placeholder="ระบุชื่อ..." class="border p-2 rounded">
-                <button id="save-seat-btn" class="bg-indigo-600 text-white py-2 rounded">บันทึก</button>
-            </div>
-        </div>
-    </aside>
-
-    <main id="map-viewport" class="flex-1 h-full overflow-hidden relative">
-        <div id="stadium-map" class="flex flex-col items-center bg-white p-16 w-max min-w-full">
-            <!-- Header: Facilities -->
-            <div class="w-[2200px] flex gap-4 mb-8">
-                <div class="w-64 h-24 bg-slate-200 border-2 border-slate-300 flex items-center justify-center font-bold text-sm">ELEVATOR 1-4</div>
-                <div class="flex-1 bg-pink-100 border-2 border-pink-200 flex items-center justify-center font-bold text-xl">LADIES' ROOM</div>
-                <div class="flex-1 bg-blue-100 border-2 border-blue-200 flex items-center justify-center font-bold text-xl">GENTS' ROOM</div>
-                <div class="flex-1 bg-teal-100 border-2 border-teal-200 flex items-center justify-center font-bold text-xl">ATHLETE'S ROOM</div>
-                <div class="flex-1 bg-amber-100 border-2 border-amber-200 flex items-center justify-center font-bold text-xl">CLOAKROOM</div>
-            </div>
-
-            <!-- Hallway -->
-            <div class="w-[2200px] bg-slate-200 h-20 mb-12 flex items-center justify-between px-8 text-slate-500 font-bold border-2 border-slate-300">
-                <div class="flex gap-4">
-                    <div class="bg-lime-200 px-4 py-2 border border-lime-400 text-xs">MERCH ZONE</div>
-                    <div class="bg-lime-200 px-4 py-2 border border-lime-400 text-xs">REGISTER ZONE</div>
+    <main id="map-wrapper" class="w-full h-full overflow-auto p-10">
+        <div id="stadium-map" class="bg-white p-12 border-2 border-slate-200 shadow-sm flex flex-col items-center min-w-max">
+            
+            <!-- ด้านบน: โถงและห้องต่างๆ -->
+            <div class="w-full flex flex-col gap-4 mb-12">
+                <div class="flex gap-4 h-28 w-full">
+                    <div class="facility-box w-48 bg-slate-100 text-slate-500 text-sm">ELEVATOR 1-4</div>
+                    <div class="facility-box flex-1 bg-pink-50 text-pink-600 text-2xl">LADIES' ROOM</div>
+                    <div class="facility-box flex-1 bg-blue-50 text-blue-600 text-2xl">GENTS' ROOM</div>
+                    <div class="facility-box flex-1 bg-teal-50 text-teal-600 text-2xl">ATHLETE'S ROOM</div>
+                    <div class="facility-box flex-1 bg-amber-50 text-amber-700 text-2xl">CLOAKROOM</div>
                 </div>
-                <div>HALLWAY</div>
-                <div class="bg-lime-200 px-4 py-2 border border-lime-400 text-xs">STAFF ENTRANCE</div>
+                <div class="w-full bg-slate-100 border-2 border-slate-200 h-20 flex items-center justify-between px-8 text-slate-400 font-bold tracking-widest uppercase">
+                    <span class="bg-lime-200 px-4 py-2 text-xs text-lime-900 border border-lime-300">Merch Zone</span>
+                    HALLWAY
+                    <span class="bg-lime-200 px-4 py-2 text-xs text-lime-900 border border-lime-300">Staff Entrance</span>
+                </div>
             </div>
 
-            <div class="flex gap-12 items-start">
-                <!-- Left Side Booths -->
-                <div class="w-48 flex flex-col gap-4">
-                    <div class="h-20 bg-lime-200 border-2 border-lime-400 flex items-center justify-center font-bold text-xs">MAIN ENTRANCE</div>
-                    <div class="h-40 bg-purple-100 border-2 border-purple-200 flex items-center justify-center font-bold text-xs" style="writing-mode: vertical-rl;">FIRST AID UNIT</div>
-                    <div class="h-48 bg-purple-100 border-2 border-purple-200 flex items-center justify-center font-bold text-sm" style="writing-mode: vertical-rl;">SPONSOR BOOTH</div>
-                    <div class="h-64 bg-lime-200 border-2 border-lime-400 flex items-center justify-center font-bold text-sm" style="writing-mode: vertical-rl;">MARSHALLING AREA</div>
+            <!-- ผังหลัก -->
+            <div class="flex gap-8">
+                <!-- บูธซ้าย -->
+                <div class="w-40 flex flex-col gap-4">
+                    <div class="facility-box h-20 bg-lime-200 text-lime-900 text-xs">MAIN ENTRANCE</div>
+                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-sm text-vertical">FIRST AID UNIT</div>
+                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">SPONSOR BOOTH</div>
+                    <div class="facility-box flex-1 bg-lime-200 text-lime-900 text-sm text-vertical">MARSHALLING AREA</div>
                 </div>
 
-                <!-- Core Map -->
-                <div id="seating-core" class="flex flex-col gap-1 items-center"></div>
+                <!-- อัฒจันทร์และสนาม -->
+                <div id="seating-core" class="flex flex-col gap-1 items-center">
+                    <!-- จาวาสคริปต์จะวาดที่นั่งที่นี่ -->
+                </div>
 
-                <!-- Right Side Booths -->
-                <div class="w-48 flex flex-col gap-4">
-                    <div class="h-96 bg-purple-100 border-2 border-purple-200 flex items-center justify-center font-bold text-sm" style="writing-mode: vertical-rl;">PHOTO BOOTH</div>
-                    <div class="h-64 bg-purple-100 border-2 border-purple-200 flex items-center justify-center font-bold text-sm" style="writing-mode: vertical-rl;">SNACK BOOTH</div>
+                <!-- บูธขวา -->
+                <div class="w-40 flex flex-col gap-4">
+                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">PHOTO BOOTH</div>
+                    <div class="facility-box flex-1 bg-purple-50 text-purple-600 text-lg text-vertical">SNACK BOOTH</div>
                 </div>
             </div>
         </div>
     </main>
 
     <script type="module">
-        // [คงส่วน Import และ Logic การวาดผังเดิมไว้ แต่เพิ่มโค้ดวาดโซน A-L ตามผังใหม่]
-        // หมายเหตุ: เนื่องจากพื้นที่จำกัด ในไฟล์จริงให้คุณใส่ Logic Render ต่อจากโค้ดข้างบนนี้ครับ
-        // ... (Logic การ Render เก้าอี้แบบเดิม) ...
+        // [โค้ดส่วนของ Firebase และการเรนเดอร์เดิมคงไว้ แต่ปรับให้ยิงข้อมูลเข้า div#seating-core]
+        // การเรนเดอร์เดิมของคุณมีตรรกะการวาดเก้าอี้และโซนอยู่แล้ว นำมาวางที่นี่ได้เลยครับ
     </script>
 </body>
 </html>

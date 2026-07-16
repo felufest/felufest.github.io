@@ -1,276 +1,243 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeluFest #1 - Activity Hub</title>
-    <!-- โหลดฟอนต์สไตล์ Pop-Art/Gaming -->
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,700;1,700&family=Kanit:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>FeluFest #1 - The Ultimate Cosplay Sports Day</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลดไลบรารีสร้าง QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
     <style>
-        /* CSS ตัวแปรสำหรับ Dynamic Theme (แก้ไขได้ผ่านหน้าเว็บ) */
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap');
+
+        /* 
+         * ระบบตัวแปรธีม (Theme Variables)
+         * ค่าเริ่มต้น (Default) จะถูกตั้งไว้ที่นี่ แต่ถ้ามีการตั้งค่าจาก Firebase 
+         * มันจะถูกเขียนทับด้วย JavaScript อัตโนมัติ 
+         */
         :root {
-            --bg-base: #0f172a;        /* พื้นหลังหลัก */
-            --bg-card: #1e293b;        /* สีการ์ด */
-            --color-primary: #f59e0b;  /* สีส้มจากโลโก้ */
-            --color-secondary: #ec4899; /* สีรอง (ชมพู) */
-            --color-accent: #3b82f6;   /* สีเน้น (น้ำเงิน) */
-            --radius-card: 1.5rem;     /* ความมนของกรอบ */
-            --font-head: 'Kanit', sans-serif;
-            --font-body: 'Chakra Petch', sans-serif;
+            --primary-bg: #0f172a;      /* สีพื้นหลังหลัก */
+            --accent-color: #f59e0b;    /* สีเน้น (ปุ่ม/ลูกเล่น) */
+            --accent-glow: rgba(245, 158, 11, 0.4);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --border-radius: 1.5rem;    /* ความโค้งของกรอบ */
         }
 
-        body {
-            background-color: var(--bg-base);
-            color: #f8fafc;
-            font-family: var(--font-body);
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            transition: background-color 0.5s ease;
+        }
+
+        /* พื้นหลังแบบมีไดนามิก (Background Dynamic Pattern) */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
-            background-attachment: fixed;
-            min-height: 100vh;
+                radial-gradient(circle at 15% 50%, rgba(255,255,255,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, var(--accent-glow) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
         }
 
-        h1, h2, h3, .font-head { font-family: var(--font-head); }
-
-        /* การ์ดสไตล์ลอยตัว (Glassmorphism + Neon Border) */
-        .glass-card {
-            background: var(--bg-card);
+        /* สไตล์กล่อง UI (Dynamic Box) */
+        .glass-box {
+            background: var(--card-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-card);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* ขอบเรืองแสงด้านบนการ์ด */
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
         }
 
-        /* ปุ่มหลัก */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-            color: white;
-            font-family: var(--font-head);
-            font-weight: 900;
+        .glass-box:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 15px 40px -10px var(--accent-glow);
+        }
+
+        /* ปุ่มกดป๊อปๆ */
+        .btn-dynamic {
+            background-color: var(--accent-color);
+            color: #111;
+            font-weight: 800;
+            border-radius: calc(var(--border-radius) / 2);
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-radius: calc(var(--radius-card) / 2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 20px -10px var(--color-primary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
         }
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 15px 25px -10px var(--color-secondary);
+        .btn-dynamic:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px var(--accent-glow);
+            border-color: rgba(255,255,255,0.5);
         }
 
-        /* ป้ายยศ (Role Badges) */
-        .badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
-        .badge-admin { background: #ef4444; color: white; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
-        .badge-hstaff { background: #8b5cf6; color: white; box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
-        .badge-staff { background: #3b82f6; color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
-        .badge-upgrade { background: linear-gradient(45deg, #fbbf24, #f59e0b); color: #78350f; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
-        .badge-normal { background: #64748b; color: white; }
+        /* สีทีมต่างๆ (Sorting Hat) */
+        .team-red { background: linear-gradient(135deg, #ef4444, #991b1b); }
+        .team-purple { background: linear-gradient(135deg, #a855f7, #6b21a8); }
+        .team-blue { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+        .team-green { background: linear-gradient(135deg, #22c55e, #166534); }
+        .team-none { background: linear-gradient(135deg, #475569, #1e293b); }
 
-        /* แอนิเมชันสำหรับ Theme Panel */
-        #theme-panel { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .panel-closed { transform: translateX(100%); }
-        .panel-open { transform: translateX(0); }
+        /* Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
     </style>
 </head>
-<body class="pb-20">
+<body class="relative min-h-screen pb-20">
 
-    <!-- Navbar -->
-    <nav class="glass-card !border-t-0 !rounded-none !rounded-b-3xl sticky top-0 z-50 mb-8 px-6 py-4 flex justify-between items-center">
+    <!-- พื้นหลังกราฟิก -->
+    <div class="bg-pattern"></div>
+
+    <!-- แถบเมนูด้านบน (Navbar) -->
+    <nav class="fixed w-full top-0 z-50 glass-box rounded-none border-t-0 border-l-0 border-r-0 border-b border-white/10 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <!-- โลโก้งาน (ดึงจาก Firebase ได้) -->
-            <img id="nav-logo" src="https://ui-avatars.com/api/?name=FF&background=f59e0b&color=fff&rounded=true" alt="FeluFest" class="w-10 h-10 object-contain rounded-full border-2 border-white/20">
-            <h1 class="text-xl font-black tracking-widest text-white drop-shadow-md">FELU<span style="color: var(--color-primary);">FEST</span></h1>
+            <!-- โลโก้ตรงนี้จะเปลี่ยนตามที่ตั้งค่าในหลังบ้าน -->
+            <img id="nav-logo" src="https://via.placeholder.com/150x50?text=FELUFEST" alt="Logo" class="h-10 object-contain">
         </div>
-        <div id="nav-profile" class="hidden flex items-center gap-3">
+        
+        <div id="nav-user-info" class="hidden flex items-center gap-4">
             <div class="text-right hidden sm:block">
-                <p id="nav-name" class="text-sm font-bold text-white"></p>
-                <p id="nav-role" class="text-xs text-slate-400"></p>
+                <p id="nav-username" class="text-sm font-bold text-white leading-tight">-</p>
+                <p id="nav-role" class="text-xs text-amber-400 font-semibold tracking-wider">-</p>
             </div>
-            <img id="nav-pic" src="" class="w-10 h-10 rounded-full border-2 border-[var(--color-primary)] cursor-pointer hover:scale-110 transition" onclick="document.getElementById('logoutBtn').click()">
+            <img id="nav-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-[var(--accent-color)]">
+            <button id="logout-btn" class="text-xs text-slate-400 hover:text-white transition">ออกจากระบบ</button>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 max-w-4xl">
-        
-        <!-- ส่วนที่ 1: ล็อกอิน (แสดงก่อนเข้าระบบ) -->
-        <section id="loginSection" class="glass-card p-10 text-center flex flex-col items-center justify-center min-h-[60vh] mt-10">
-            <img id="hero-logo" src="https://ui-avatars.com/api/?name=Felu+Fest&background=0f172a&color=f59e0b&size=200" alt="Logo" class="w-48 mb-6 drop-shadow-2xl hover:scale-105 transition duration-500">
-            <h2 class="text-4xl md:text-5xl font-black mb-4 uppercase tracking-wider drop-shadow-lg">Welcome to <br><span style="color: var(--color-primary);">FeluFest #1</span></h2>
-            <p class="text-slate-400 mb-10 font-head text-lg">ปฐมบทกีฬาสีคอสเพลย์ที่คุณกำหนดเอง</p>
+    <!-- คอนเทนต์หลัก -->
+    <main class="max-w-6xl mx-auto pt-32 px-4 sm:px-6 flex flex-col gap-10">
+
+        <!-- ส่วนที่ 1: Hero & เข้าสู่ระบบ -->
+        <section id="auth-section" class="w-full max-w-lg mx-auto glass-box p-8 text-center flex flex-col items-center">
+            <div class="w-40 h-40 mb-6 animate-float">
+                <img id="hero-logo" src="https://via.placeholder.com/300?text=LOGO" alt="Main Logo" class="w-full h-full object-contain drop-shadow-2xl">
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black mb-2 tracking-tight">FELUFEST <span class="text-[var(--accent-color)]">#1</span></h1>
+            <p class="text-slate-400 mb-8 font-semibold">ปฐมบทกีฬาสีคอสเพลย์ที่คุณกำหนดเอง</p>
             
-            <button id="loginBtn" class="btn-primary w-full max-w-md py-4 text-lg flex items-center justify-center gap-3 group">
-                <svg class="w-6 h-6 group-hover:animate-bounce" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12.545 10.239v3.821h5.445c-.712 2.315-2.757 3.951-5.445 3.951-3.131 0-5.696-2.551-5.696-5.696s2.565-5.696 5.696-5.696c1.455 0 2.775.556 3.784 1.467l2.844-2.844C17.432 3.518 15.176 2.5 12.545 2.5 7.022 2.5 2.5 7.022 2.5 12.545s4.522 10.045 10.045 10.045c5.795 0 9.624-4.077 9.624-9.805 0-.742-.087-1.454-.229-2.136h-9.395z"/></svg>
-                LOGIN WITH GOOGLE
+            <button id="login-google-btn" class="btn-dynamic w-full py-4 flex justify-center items-center gap-3 text-lg">
+                <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                เข้าสู่ระบบด้วย Google
             </button>
         </section>
 
-        <!-- ส่วนที่ 2: Dashboard (แสดงหลังล็อกอิน) -->
-        <div id="dashboardSection" class="hidden space-y-6">
+        <!-- ส่วนที่ 2: Dashboard ผู้ใช้งาน (ซ่อนจนกว่าจะล็อกอิน) -->
+        <section id="dashboard-section" class="hidden flex flex-col md:flex-row gap-8 items-start">
             
-            <!-- การ์ดโปรไฟล์ & ตั๋ว -->
-            <section class="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start relative">
-                
-                <!-- QR Code โซน -->
-                <div class="flex flex-col items-center bg-white/5 p-4 rounded-2xl border border-white/10 w-full md:w-auto">
-                    <p class="text-xs text-slate-400 mb-2 uppercase tracking-widest">Entry QR Code</p>
-                    <div id="qrcode" class="bg-white p-2 rounded-xl mb-3 shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
-                    <span id="ticket-id" class="font-mono text-sm text-[var(--color-primary)] font-bold">WAITING...</span>
-                </div>
-
-                <!-- ข้อมูลผู้ใช้ -->
-                <div class="flex-1 w-full">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-white/10 pb-4">
-                        <div>
-                            <h2 id="dash-name" class="text-3xl font-black tracking-wide text-white mb-1">...</h2>
-                            <p id="dash-email" class="text-sm text-slate-400">...</p>
-                        </div>
-                        <div id="role-badge-container">
-                            <!-- Badge จะถูก JS วาดตรงนี้ -->
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                            <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Color Team</p>
-                            <p id="dash-color" class="text-xl font-bold font-head capitalize flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-slate-500 block" id="color-dot"></span> รอการสุ่ม
-                            </p>
-                        </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                            <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Ticket Type</p>
-                            <p id="dash-ticket" class="text-lg font-bold text-[var(--color-secondary)]">ยังไม่มีบัตร</p>
-                        </div>
-                    </div>
-
-                    <!-- ปุ่ม Discord & สิทธิพิเศษ -->
-                    <div class="mt-6 flex flex-col sm:flex-row gap-3">
-                        <button class="flex-1 bg-[#5865F2] hover:bg-[#4752C4] text-white py-3 rounded-xl font-bold transition flex justify-center items-center gap-2 shadow-lg shadow-[#5865f2]/20 disabled:opacity-50">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
-                            Connect Discord
-                        </button>
-                        <button id="perksBtn" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-3 rounded-xl font-bold transition">
-                            ดูสิทธิพิเศษของฉัน
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ปุ่มซ่อนออกจากระบบ -->
-                <button id="logoutBtn" class="hidden"></button>
-            </section>
-
-            <!-- Activity Hub (กระดานกิจกรรม) -->
-            <section class="mt-10">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-black border-l-4 border-[var(--color-primary)] pl-3">ACTIVITY HUB</h2>
-                    <span class="text-sm text-slate-400">กรองเฉพาะกิจกรรมของคุณ</span>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="activity-container">
-                    <!-- การ์ดตัวอย่าง (ในของจริงดึงจาก Firebase) -->
-                    <div class="glass-card p-6 border-l-4 border-l-[var(--color-primary)] group">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="bg-[var(--color-primary)] text-slate-900 text-xs font-bold px-2 py-1 rounded">E-SPORTS</span>
-                            <span class="text-red-400 text-xs font-bold animate-pulse">● LIVE</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-2 group-hover:text-[var(--color-primary)] transition">แข่ง ROV คัดเลือกตัวแทนสี</h3>
-                        <p class="text-sm text-slate-400 mb-4 line-clamp-2">เปิดรับสมัครผู้เล่น ROV แรงค์คอนขึ้นไป ฟอร์มทีม 5 คนเพื่อเป็นตัวแทนสีไปแข่งรอบออฟไลน์</p>
-                        <div class="bg-slate-900/80 p-3 rounded-lg flex justify-between items-center">
-                            <div class="text-center">
-                                <p class="text-[10px] text-slate-500 uppercase">ปิดรับสมัครในอีก</p>
-                                <p class="font-mono font-bold text-white tracking-widest">03<span class="text-slate-500">:</span>12<span class="text-slate-500">:</span>45<span class="text-slate-500">:</span>00</p>
-                            </div>
-                            <button class="bg-slate-700 hover:bg-[var(--color-primary)] hover:text-slate-900 px-4 py-2 rounded text-sm font-bold transition">สมัครเลย</button>
-                        </div>
-                    </div>
+            <!-- ฝั่งซ้าย: ข้อมูลตั๋ว และ QR Code -->
+            <div class="w-full md:w-1/3 flex flex-col gap-6">
+                <div class="glass-box p-6 relative overflow-hidden">
+                    <!-- แถบสีทีม (จะเป็นสีตามที่สุ่มได้) -->
+                    <div id="team-color-bar" class="absolute top-0 left-0 w-full h-2 team-none"></div>
                     
-                    <div class="glass-card p-6 border-l-4 border-l-[var(--color-secondary)] group">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="bg-[var(--color-secondary)] text-white text-xs font-bold px-2 py-1 rounded">AUDITION</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-2 group-hover:text-[var(--color-secondary)] transition">ออดิชั่นเชียร์ลีดเดอร์ประจำสี</h3>
-                        <p class="text-sm text-slate-400 mb-4 line-clamp-2">ต้องการผู้ที่มีความมั่นใจ รักการเต้น มาเป็นส่วนหนึ่งของทีมเชียร์ (1 สีมี 1 ทีม)</p>
-                        <div class="bg-slate-900/80 p-3 rounded-lg flex justify-between items-center">
-                            <div class="text-center">
-                                <p class="text-[10px] text-slate-500 uppercase">เปิดรับสมัคร</p>
-                                <p class="font-head font-bold text-[var(--color-secondary)]">COMING SOON</p>
-                            </div>
-                            <button class="bg-slate-800 text-slate-500 px-4 py-2 rounded text-sm font-bold cursor-not-allowed">ยังไม่เปิด</button>
+                    <h2 class="text-xl font-bold mb-4 flex justify-between items-center">
+                        My Ticket
+                        <span id="ticket-status-badge" class="text-xs bg-slate-700 px-3 py-1 rounded-full text-slate-300">ยังไม่มีบัตร</span>
+                    </h2>
+
+                    <!-- กล่องแสดง QR Code -->
+                    <div class="bg-white p-4 rounded-xl flex justify-center items-center mb-4 mx-auto w-48 h-48 relative group">
+                        <div id="qrcode" class="opacity-20 transition-opacity"></div>
+                        <!-- โชว์ทับถ้ายังไม่ซื้อตั๋ว -->
+                        <div id="qr-overlay" class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-white/90 backdrop-blur-sm rounded-xl">
+                            <span class="text-slate-800 font-bold text-sm">QR จะแสดงเมื่อ</span>
+                            <span class="text-slate-600 text-xs">ชำระเงินสำเร็จ</span>
                         </div>
                     </div>
-                </div>
-            </section>
 
-        </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-white/10 pb-2">
+                            <span class="text-slate-400 text-sm">ประเภทผู้ชม</span>
+                            <span id="user-tier" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/10 pb-2">
+                            <span class="text-slate-400 text-sm">สีประจำทีม</span>
+                            <span id="user-team" class="font-bold text-slate-500 uppercase tracking-widest">รอการสุ่ม</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400 text-sm">เลขที่นั่ง (Seat)</span>
+                            <span id="user-seat" class="font-black text-xl text-[var(--accent-color)]">-</span>
+                        </div>
+                    </div>
+
+                    <!-- ปุ่มซื้อตั๋ว (แสดงเฉพาะตอนยังไม่มีตั๋ว) -->
+                    <div id="ticket-actions" class="mt-6">
+                        <button class="btn-dynamic w-full py-3 text-sm flex justify-center items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" /><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                            สั่งซื้อบัตรเข้างาน
+                        </button>
+                    </div>
+                </div>
+
+                <!-- กล่องปุ่มเชื่อม Discord -->
+                <div class="glass-box p-6 border-l-4 border-[#5865F2]">
+                    <h3 class="font-bold mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#5865F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.045-.32 13.579.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                        เชื่อมต่อ Discord Server
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">เชื่อมต่อบัญชีเพื่อรับยศ (Role) ตามสีทีมของคุณแบบอัตโนมัติ สำหรับเล่นกิจกรรมรายสัปดาห์</p>
+                    <button class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2 rounded-lg transition text-sm">Connect Discord</button>
+                </div>
+            </div>
+
+            <!-- ฝั่งขวา: Activity Hub (กระดานกิจกรรม) -->
+            <div class="w-full md:w-2/3 flex flex-col gap-6">
+                <div class="flex justify-between items-end border-b border-white/10 pb-4">
+                    <div>
+                        <h2 class="text-3xl font-black text-white tracking-wide">Activity Hub</h2>
+                        <p class="text-sm text-[var(--accent-color)] font-semibold mt-1">กิจกรรมและภารกิจสำหรับสีของคุณ</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- การ์ดตัวอย่าง: ออดิชั่นหลีด -->
+                    <div class="glass-box p-5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-pink-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg z-10">หลีดเดอร์</div>
+                        <h3 class="font-bold text-lg mb-1">ออดิชั่นเชียร์ลีดเดอร์</h3>
+                        <p class="text-xs text-slate-400 mb-4">รับสมัครตัวแทนสีละ 1 ทีม (6-10 คน)</p>
+                        
+                        <div class="bg-black/30 rounded-lg p-3 mb-4 text-center">
+                            <span class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1">ปิดรับสมัครในอีก</span>
+                            <div class="flex justify-center gap-2 text-xl font-black font-mono">
+                                <div><span class="text-white">12</span><span class="text-[10px] block text-slate-400 font-sans">DAYS</span></div>:
+                                <div><span class="text-white">08</span><span class="text-[10px] block text-slate-400 font-sans">HRS</span></div>:
+                                <div><span class="text-[var(--accent-color)]">45</span><span class="text-[10px] block text-slate-400 font-sans">MIN</span></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-2 rounded-lg transition text-sm">ดูรายละเอียดและสมัคร</button>
+                    </div>
+
+                    <!-- การ์ดตัวอย่าง: E-Sports (จะขึ้นเฉพาะเมื่อสุ่มสีได้แล้ว) -->
+                    <div class="glass-box p-5 relative overflow-hidden opacity-50 grayscale">
+                        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-[2px] flex items-center justify-center z-20">
+                            <span class="text-xs font-bold text-amber-500 bg-black/50 px-4 py-2 rounded-full border border-amber-500/30">ปลดล็อกเมื่อมีบัตรและสีทีม</span>
+                        </div>
+                        <div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg z-10">E-Sports</div>
+                        <h3 class="font-bold text-lg mb-1">ทัวร์นาเมนต์ ROV ซ้อมมือ</h3>
+                        <p class="text-xs text-slate-400 mb-4">กิจกรรมเก็บคะแนนสะสมก่อนวันงาน</p>
+                        <button class="w-full bg-slate-700 text-slate-400 font-bold py-2 rounded-lg text-sm cursor-not-allowed">สมัครแข่ง</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
     </main>
-
-    <!-- ปุ่มเปิดแผงตั้งค่า Theme (เห็นเฉพาะ Admin/Role:4) -->
-    <button id="open-theme-btn" class="hidden fixed bottom-6 right-6 z-[100] bg-white text-slate-900 p-4 rounded-full shadow-2xl hover:scale-110 transition border-4 border-slate-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
-    </button>
-
-    <!-- แผงตั้งค่า Theme (Theme Configurator) -->
-    <aside id="theme-panel" class="fixed top-0 right-0 w-80 h-full bg-white z-[200] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col panel-closed text-slate-800 font-head">
-        <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-            <h2 class="text-xl font-black">🎨 Theme Configurator</h2>
-            <button id="close-theme-btn" class="text-slate-400 hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-        </div>
-        <div class="p-6 flex-1 overflow-y-auto space-y-6">
-            <p class="text-sm text-slate-500 mb-4">ปรับแต่งหน้าตาเว็บไซต์ได้ทันที ข้อมูลจะถูกเซฟลงฐานข้อมูลและแสดงผลกับผู้ใช้ทุกคน</p>
-            
-            <div>
-                <label class="block text-sm font-bold mb-2">ลิงก์รูปภาพโลโก้ (URL):</label>
-                <input type="text" id="cfg-logo" class="w-full border border-slate-300 rounded p-2 text-sm focus:border-[var(--color-primary)] outline-none" placeholder="https://...">
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold mb-2">สีหลัก (Primary):</label>
-                    <input type="color" id="cfg-primary" class="w-full h-10 rounded cursor-pointer border-0">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-2">สีรอง (Secondary):</label>
-                    <input type="color" id="cfg-secondary" class="w-full h-10 rounded cursor-pointer border-0">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-2">สีการ์ด (Card BG):</label>
-                    <input type="color" id="cfg-card" class="w-full h-10 rounded cursor-pointer border-0">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-2">พื้นหลัง (Base BG):</label>
-                    <input type="color" id="cfg-base" class="w-full h-10 rounded cursor-pointer border-0">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-2">ความมนของกรอบการ์ด:</label>
-                <input type="range" id="cfg-radius" min="0" max="3" step="0.5" class="w-full accent-[var(--color-primary)]">
-                <div class="flex justify-between text-xs text-slate-500 mt-1"><span>เหลี่ยม</span><span>มนมาก</span></div>
-            </div>
-
-            <button id="save-theme-btn" class="w-full bg-slate-900 text-white font-bold py-3 rounded hover:bg-[var(--color-primary)] transition mt-4">บันทึกธีมลงระบบ</button>
-        </div>
-    </aside>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🛑🛑 นำ firebaseConfig ของคุณมาวาง 🛑🛑
+        // 🛑🛑 ใส่ Config ของคุณตรงนี้ 🛑🛑
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -285,82 +252,34 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // --- ระบบ Theming สด ---
-        const rootVars = document.documentElement.style;
-        const cfgLogo = document.getElementById('cfg-logo');
-        const cfgPrimary = document.getElementById('cfg-primary');
-        const cfgSecondary = document.getElementById('cfg-secondary');
-        const cfgCard = document.getElementById('cfg-card');
-        const cfgBase = document.getElementById('cfg-base');
-        const cfgRadius = document.getElementById('cfg-radius');
-        
-        // ดึง Theme จาก Firebase มาแสดงแบบ Realtime
-        onSnapshot(doc(db, "system", "theme"), (docSnap) => {
+        // โหลด Theme Settings จาก Firebase ทันทีที่เปิดเว็บ
+        const themeRef = doc(db, 'settings', 'theme');
+        onSnapshot(themeRef, (docSnap) => {
             if (docSnap.exists()) {
-                const theme = docSnap.data();
-                rootVars.setProperty('--color-primary', theme.primary || '#f59e0b');
-                rootVars.setProperty('--color-secondary', theme.secondary || '#ec4899');
-                rootVars.setProperty('--bg-card', theme.cardBg || '#1e293b');
-                rootVars.setProperty('--bg-base', theme.baseBg || '#0f172a');
-                rootVars.setProperty('--radius-card', (theme.borderRadius || 1.5) + 'rem');
-                
-                if(theme.logoUrl) {
-                    document.getElementById('nav-logo').src = theme.logoUrl;
-                    document.getElementById('hero-logo').src = theme.logoUrl;
+                const data = docSnap.data();
+                const root = document.documentElement;
+                if(data.primaryBg) root.style.setProperty('--primary-bg', data.primaryBg);
+                if(data.accentColor) root.style.setProperty('--accent-color', data.accentColor);
+                // สร้างสีเรืองแสงแบบโปร่งใสอัตโนมัติจาก Hex Code
+                if(data.accentColor) {
+                    // แปลง Hex เป็น RGBA ง่ายๆ (สำหรับลูกเล่นแสง)
+                    const r = parseInt(data.accentColor.slice(1, 3), 16);
+                    const g = parseInt(data.accentColor.slice(3, 5), 16);
+                    const b = parseInt(data.accentColor.slice(5, 7), 16);
+                    root.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.4)`);
                 }
-
-                // อัปเดตในฟอร์ม Admin ด้วย
-                cfgLogo.value = theme.logoUrl || '';
-                cfgPrimary.value = theme.primary || '#f59e0b';
-                cfgSecondary.value = theme.secondary || '#ec4899';
-                cfgCard.value = theme.cardBg || '#1e293b';
-                cfgBase.value = theme.baseBg || '#0f172a';
-                cfgRadius.value = theme.borderRadius || 1.5;
+                if(data.borderRadius) root.style.setProperty('--border-radius', data.borderRadius + 'px');
+                
+                // เปลี่ยนโลโก้
+                if(data.logoUrl) {
+                    document.getElementById('nav-logo').src = data.logoUrl;
+                    document.getElementById('hero-logo').src = data.logoUrl;
+                }
             }
         });
 
-        // เปิด-ปิด Panel Theme
-        const themePanel = document.getElementById('theme-panel');
-        document.getElementById('open-theme-btn').onclick = () => themePanel.classList.replace('panel-closed', 'panel-open');
-        document.getElementById('close-theme-btn').onclick = () => themePanel.classList.replace('panel-open', 'panel-closed');
-
-        // พรีวิว Theme สดเวลาลากแถบสี
-        const updatePreview = () => {
-            rootVars.setProperty('--color-primary', cfgPrimary.value);
-            rootVars.setProperty('--color-secondary', cfgSecondary.value);
-            rootVars.setProperty('--bg-card', cfgCard.value);
-            rootVars.setProperty('--bg-base', cfgBase.value);
-            rootVars.setProperty('--radius-card', cfgRadius.value + 'rem');
-            if(cfgLogo.value) {
-                document.getElementById('nav-logo').src = cfgLogo.value;
-                document.getElementById('hero-logo').src = cfgLogo.value;
-            }
-        };
-        cfgPrimary.oninput = updatePreview; cfgSecondary.oninput = updatePreview;
-        cfgCard.oninput = updatePreview; cfgBase.oninput = updatePreview;
-        cfgRadius.oninput = updatePreview; cfgLogo.oninput = updatePreview;
-
-        // บันทึก Theme ลง DB
-        document.getElementById('save-theme-btn').onclick = async () => {
-            document.getElementById('save-theme-btn').innerText = "กำลังบันทึก...";
-            await setDoc(doc(db, "system", "theme"), {
-                logoUrl: cfgLogo.value,
-                primary: cfgPrimary.value,
-                secondary: cfgSecondary.value,
-                cardBg: cfgCard.value,
-                baseBg: cfgBase.value,
-                borderRadius: parseFloat(cfgRadius.value)
-            });
-            document.getElementById('save-theme-btn').innerText = "บันทึกธีมลงระบบ";
-            alert('อัปเดตธีมสำเร็จ!');
-        };
-
-
-        // --- ระบบ Auth & Roles ---
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        
-        loginBtn.addEventListener('click', async () => {
+        // ระบบ Login
+        document.getElementById('login-google-btn').addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
@@ -368,94 +287,106 @@
                 const userSnap = await getDoc(userRef);
                 
                 if (!userSnap.exists()) {
-                    // กำหนดค่าตั้งต้น
+                    // สร้างโปรไฟล์ใหม่ หากเพิ่งล็อกอินครั้งแรก
+                    // ตั้ง Role เริ่มต้นเป็น 'ผู้ชมทั่วไป'
                     await setDoc(userRef, {
                         uid: user.uid,
                         name: user.displayName,
                         email: user.email,
-                        role_level: 0,  // 0=ใหม่, 1=ลูกค้า, 2=Staff, 3=H.Staff, 4=Admin
-                        ticket_type: 'none',
-                        team_color: 'none', 
+                        role: 'audience_normal', // roles: super_admin, head_staff, staff, audience_normal, audience_vip, athlete, photographer
+                        ticket_status: 'none',
+                        team_color: 'none',
+                        seat_id: '',
                         created_at: new Date()
                     });
                 }
-            } catch (error) { console.error(error); alert("ล็อกอินไม่สำเร็จ"); }
+            } catch (error) {
+                console.error("Login Error:", error);
+            }
         });
 
-        logoutBtn.addEventListener('click', () => signOut(auth));
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-        // แปลงระดับ Role เป็น Badge สวยๆ
-        function getRoleBadge(level, ticket) {
-            if(level === 4) return '<span class="badge badge-admin">คุณ (Admin)</span>';
-            if(level === 3) return '<span class="badge badge-hstaff">Head Staff</span>';
-            if(level === 2) return '<span class="badge badge-staff">Staff</span>';
-            if(level === 1) {
-                if(ticket === 'upgrade') return '<span class="badge badge-upgrade">Upgrade Tier</span>';
-                if(ticket === 'photographer') return '<span class="badge badge-normal bg-slate-700">ตากล้อง</span>';
-                if(ticket === 'athlete') return '<span class="badge badge-normal bg-orange-600">นักกีฬา</span>';
-                return '<span class="badge badge-normal">ผู้ชมทั่วไป</span>';
-            }
-            return '<span class="badge bg-slate-800 text-slate-400">ยังไม่ลงทะเบียนบัตร</span>';
-        }
+        let qrcodeInstance = null;
 
-        // แปลงสีทีมเป็น CSS Color
-        const teamColors = {
-            'red': '#ef4444', 'purple': '#a855f7', 'blue': '#3b82f6', 'green': '#22c55e', 'none': '#64748b'
-        };
-        const teamNames = {
-            'red': 'ทีมสีแดง', 'purple': 'ทีมสีม่วง', 'blue': 'ทีมสีน้ำเงิน', 'green': 'ทีมสีเขียว', 'none': 'รอการสุ่ม'
-        };
-
+        // ติดตามสถานะ User
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                document.getElementById('nav-profile').classList.remove('hidden');
+                // ซ่อนหน้า Login, โชว์หน้า Dashboard
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('dashboard-section').classList.add('flex');
+                document.getElementById('nav-user-info').classList.remove('hidden');
                 
-                document.getElementById('nav-pic').src = user.photoURL;
-                document.getElementById('nav-name').innerText = user.displayName;
-                document.getElementById('dash-name').innerText = user.displayName;
-                document.getElementById('dash-email').innerText = user.email;
+                // อัปเดตข้อมูลเบื้องต้น
+                document.getElementById('nav-username').innerText = user.displayName;
+                document.getElementById('nav-avatar').src = user.photoURL;
 
-                // ดึงข้อมูล Role จาก Firestore
-                onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+                // ดึงข้อมูล Roles และ ตั๋ว แบบ Realtime
+                onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
                     if (docSnap.exists()) {
-                        const data = docSnap.data();
+                        const userData = docSnap.data();
                         
-                        // แสดง Badge ตามระดับ Role
-                        document.getElementById('role-badge-container').innerHTML = getRoleBadge(data.role_level, data.ticket_type);
+                        // แปลง Role เป็นข้อความสวยๆ
+                        const roleMap = {
+                            'super_admin': 'ผู้สร้างงาน (Admin)',
+                            'head_staff': 'หัวหน้าทีมงาน',
+                            'staff': 'ทีมงาน',
+                            'audience_normal': 'ผู้เข้าร่วม (ธรรมดา)',
+                            'audience_vip': 'ผู้เข้าร่วม (อัปเกรด)',
+                            'athlete': 'นักกีฬา',
+                            'photographer': 'ตากล้อง'
+                        };
+                        document.getElementById('nav-role').innerText = roleMap[userData.role] || 'ผู้ใช้งาน';
+                        document.getElementById('user-tier').innerText = roleMap[userData.role] || '-';
+                        document.getElementById('user-seat').innerText = userData.seat_id || '-';
+
+                        // อัปเดตตั๋วและสุ่มสี
+                        const colorBar = document.getElementById('team-color-bar');
+                        const teamText = document.getElementById('user-team');
                         
-                        // โชว์ปุ่มตั้งค่า Theme เฉพาะ Admin (role_level = 4)
-                        if(data.role_level === 4) {
-                            document.getElementById('open-theme-btn').classList.remove('hidden');
-                        } else {
-                            document.getElementById('open-theme-btn').classList.add('hidden');
+                        colorBar.className = 'absolute top-0 left-0 w-full h-2'; // Reset class
+                        
+                        if (userData.ticket_status !== 'none') {
+                            document.getElementById('ticket-status-badge').innerText = 'ชำระเงินแล้ว';
+                            document.getElementById('ticket-status-badge').className = 'text-xs bg-green-500/20 border border-green-500 text-green-400 px-3 py-1 rounded-full font-bold';
+                            document.getElementById('ticket-actions').classList.add('hidden');
+                            document.getElementById('qr-overlay').classList.add('hidden');
+                            
+                            // เปลี่ยนสีแถบและข้อความตามทีม
+                            if(userData.team_color !== 'none') {
+                                colorBar.classList.add(`team-${userData.team_color}`);
+                                const colorNames = { 'red': 'สีแดง', 'purple': 'สีม่วง', 'blue': 'สีน้ำเงิน', 'green': 'สีเขียว' };
+                                teamText.innerText = colorNames[userData.team_color] || userData.team_color;
+                                teamText.className = `font-black text-xl text-${userData.team_color}-400 uppercase tracking-widest`;
+                            }
+
+                            // สร้าง QR Code ด้วย User ID
+                            if (!qrcodeInstance) {
+                                document.getElementById('qrcode').classList.remove('opacity-20');
+                                qrcodeInstance = new QRCode(document.getElementById("qrcode"), {
+                                    text: userData.uid,
+                                    width: 160,
+                                    height: 160,
+                                    colorDark : "#0f172a",
+                                    colorLight : "#ffffff",
+                                    correctLevel : QRCode.CorrectLevel.H
+                                });
+                            }
                         }
-
-                        // แสดงข้อมูลสี
-                        const colorCode = teamColors[data.team_color] || teamColors['none'];
-                        document.getElementById('dash-color').innerHTML = `<span class="w-4 h-4 rounded-full shadow-[0_0_10px_${colorCode}]" style="background-color: ${colorCode}"></span> <span style="color: ${colorCode}">${teamNames[data.team_color] || 'รอการสุ่ม'}</span>`;
-                        
-                        // แสดงตั๋ว
-                        document.getElementById('dash-ticket').innerText = data.ticket_type === 'none' ? 'ยังไม่มีบัตร' : data.ticket_type.toUpperCase();
-
-                        // สร้าง QR Code ด้วย UID
-                        document.getElementById('qrcode').innerHTML = "";
-                        new QRCode(document.getElementById("qrcode"), {
-                            text: user.uid,
-                            width: 100, height: 100,
-                            colorDark : "#0f172a", colorLight : "#ffffff",
-                            correctLevel : QRCode.CorrectLevel.H
-                        });
-                        document.getElementById('ticket-id').innerText = '#' + user.uid.substring(0,6).toUpperCase();
                     }
                 });
 
             } else {
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('dashboardSection').classList.add('hidden');
-                document.getElementById('nav-profile').classList.add('hidden');
-                document.getElementById('open-theme-btn').classList.add('hidden');
+                // ถ้าล็อกเอาต์
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('dashboard-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('flex');
+                document.getElementById('nav-user-info').classList.add('hidden');
+                if(qrcodeInstance) {
+                    document.getElementById('qrcode').innerHTML = "";
+                    qrcodeInstance = null;
+                }
             }
         });
     </script>

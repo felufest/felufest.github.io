@@ -220,3 +220,312 @@
             <p class="text-xs text-slate-500 text-center">ทุกคนที่เข้าเว็บจะเห็นหน้าตาแบบนี้ทันที</p>
         </div>
     </div>
+<!-- โหลดไลบรารีสร้าง QR Code ฟรี -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- ส่วนที่ 4: JavaScript + Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // 🔥 ใส่ Config ของคุณตรงนี้ 🔥
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1_nTNwucSl37tTitbxTP18bSCK5iWlOI",
+            authDomain: "felufest-family.firebaseapp.com",
+            projectId: "felufest-family",
+            storageBucket: "felufest-family.firebasestorage.app",
+            messagingSenderId: "524842246260",
+            appId: "1:524842246260:web:d46534c7dcc27ccb757121",
+            measurementId: "G-447NGTJ7J2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // ระบุ Email ที่จะได้สิทธิ์ Admin (เปิดหน้าแก้ธีมได้)
+        const ADMIN_EMAILS = ['felunadreamplace.official@gmail.com']; 
+
+        // DOM Elements
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const themePanel = document.getElementById('theme-panel');
+        const btnThemeSettings = document.getElementById('btn-theme-settings');
+        
+        let currentUserData = null; // เก็บข้อมูล user จาก DB
+        let qrcodeInstance = null; // เก็บตัวแปล QR Code
+
+        // --- 1. ระบบจัดการธีม (Theme Engine) ---
+        function applyTheme(themeData) {
+            const root = document.documentElement;
+            if(themeData.primary) root.style.setProperty('--primary', themeData.primary);
+            if(themeData.cardBg) root.style.setProperty('--card-bg', themeData.cardBg);
+            if(themeData.bgColor) root.style.setProperty('--bg-color', themeData.bgColor);
+            if(themeData.radius) root.style.setProperty('--border-radius', themeData.radius + 'px');
+
+            if(themeData.logoUrl) {
+                document.getElementById('main-logo-login').src = themeData.logoUrl;
+                document.getElementById('main-logo-dash').src = themeData.logoUrl;
+            }
+            if(themeData.title) {
+                document.getElementById('site-title-login').innerText = themeData.title;
+                document.getElementById('site-title-dash').innerText = themeData.title;
+                document.title = `${themeData.title} - Activity Hub`;
+            }
+            if(themeData.slogan) {
+                document.getElementById('site-slogan-login').innerText = themeData.slogan;
+            }
+        }
+
+        // ดึง Theme จาก Firestore ทันทีที่โหลดเว็บ (ไม่ต้องรอล็อกอิน)
+        const themeDocRef = doc(db, 'site_settings', 'theme');
+        onSnapshot(themeDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const themeData = docSnap.data();
+                applyTheme(themeData);
+                
+                // อัปเดตค่าในฟอร์ม Admin เผื่อเค้าเปิดเข้ามาแก้
+                document.getElementById('setting-logo').value = themeData.logoUrl || '';
+                document.getElementById('setting-title').value = themeData.title || '';
+                document.getElementById('setting-slogan').value = themeData.slogan || '';
+                document.getElementById('setting-color-primary').value = themeData.primary || '#f59e0b';
+                document.getElementById('setting-color-card').value = themeData.cardBg || '#1e293b';
+                document.getElementById('setting-color-bg').value = themeData.bgColor || '#0f172a';
+                document.getElementById('setting-radius').value = themeData.radius || 24;
+                document.getElementById('radius-val').innerText = (themeData.radius || 24) + 'px';
+            } else {
+                // ถ้ายังไม่มี Theme ใน DB ให้เซฟค่า Default ลงไป
+                setDoc(themeDocRef, {
+                    logoUrl: 'https://i.imgur.com/G53A5aJ.png',
+                    title: 'FeluFest #1',
+                    slogan: 'You dream it, we fame it',
+                    primary: '#f59e0b',
+                    cardBg: '#1e293b',
+                    bgColor: '#0f172a',
+                    radius: 24
+                });
+            }
+        });
+
+        // --- 2. ระบบ Role & Auth ---
+        document.getElementById('btn-login-google').addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login failed:", error);
+                alert("ล็อกอินล้มเหลว กรุณาลองใหม่");
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // เปลี่ยนหน้าจอ
+                loginView.classList.add('hidden');
+                loginView.classList.remove('flex');
+                dashboardView.classList.remove('hidden');
+                dashboardView.classList.add('flex');
+
+                // โชว์รูปและชื่อ Google
+                document.getElementById('user-avatar').src = user.photoURL;
+                document.getElementById('user-display-name').innerText = user.displayName;
+
+                // เช็คว่าใช่ Admin ไหม
+                if (ADMIN_EMAILS.includes(user.email)) {
+                    btnThemeSettings.classList.remove('hidden'); // เปิดปุ่มเฟือง
+                    document.getElementById('user-role-badge').innerText = '🔥 OWNER';
+                    document.getElementById('user-role-badge').classList.replace('bg-slate-700', 'bg-red-600');
+                } else {
+                    document.getElementById('user-role-badge').innerText = 'USER';
+                }
+
+                // ดึงข้อมูล/สร้าง User ใน Firestore
+                const userRef = doc(db, 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    // เพิ่งล็อกอินครั้งแรก
+                    currentUserData = {
+                        uid: user.uid,
+                        name: user.displayName,
+                        email: user.email,
+                        role: 'ผู้เข้าชม', // Default role
+                        ticket_status: 'none',
+                        team_color: 'none'
+                    };
+                    await setDoc(userRef, currentUserData);
+                } else {
+                    currentUserData = userSnap.data();
+                }
+
+                updateDashboardUI(currentUserData);
+                renderActivities(currentUserData);
+
+            } else {
+                // ยังไม่ล็อกอิน
+                loginView.classList.remove('hidden');
+                loginView.classList.add('flex');
+                dashboardView.classList.add('hidden');
+                dashboardView.classList.remove('flex');
+            }
+        });
+
+        // --- 3. อัปเดต UI หน้า Dashboard ตามข้อมูล User ---
+        function updateDashboardUI(userData) {
+            // อัปเดตสถานะตั๋ว
+            const ticketEl = document.getElementById('ticket-status');
+            const buySection = document.getElementById('buy-ticket-section');
+            const qrSection = document.getElementById('qr-section');
+            
+            if (userData.ticket_status === 'none') {
+                ticketEl.innerText = "ยังไม่มีตั๋ว";
+                ticketEl.classList.add('text-red-400');
+                buySection.classList.remove('hidden');
+                qrSection.classList.add('hidden');
+            } else {
+                ticketEl.innerText = userData.ticket_status; // เช่น "Pre-sale (อัปเกรด)"
+                ticketEl.classList.remove('text-red-400');
+                ticketEl.classList.add('text-green-400');
+                buySection.classList.add('hidden');
+                qrSection.classList.remove('hidden');
+                qrSection.classList.add('flex');
+
+                // สร้าง QR Code ถ้ายังไม่เคยสร้าง
+                if (!qrcodeInstance) {
+                    qrcodeInstance = new QRCode(document.getElementById("qrcode-container"), {
+                        text: userData.uid, // ฝัง UID ลงใน QR เพื่อให้สตาฟฟ์สแกนหน้างาน
+                        width: 112,
+                        height: 112,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                }
+            }
+
+            // อัปเดตแถบสีทีม
+            const teamEl = document.getElementById('team-status');
+            const colorBar = document.getElementById('team-color-bar');
+            
+            if (userData.team_color !== 'none') {
+                teamEl.innerText = userData.team_color;
+                
+                // แมปชื่อสีกับคลาส CSS
+                const colorMap = {
+                    'แดง': 'team-red',
+                    'ม่วง': 'team-purple',
+                    'น้ำเงิน': 'team-blue',
+                    'เขียว': 'team-green'
+                };
+                
+                const cssClass = colorMap[userData.team_color];
+                if(cssClass) {
+                    colorBar.className = `absolute top-0 left-0 w-2 h-full ${cssClass}`;
+                    teamEl.style.color = 'white';
+                }
+            }
+        }
+
+        // --- 4. Mock Data สร้างการ์ดกิจกรรม ---
+        // ในอนาคตคุณสามารถดึงข้อมูลชุดนี้จาก Firestore ได้ แต่วันนี้เราทำ Mock ขึ้นมาให้เห็นภาพก่อน
+        const mockActivities = [
+            { id: 1, title: "สมัครแข่งขัน E-Sports (Valorant)", type: "Esports", forColor: "all", deadline: "2026-09-01T23:59:59" },
+            { id: 2, title: "นัดซ้อมเชียร์ลีดเดอร์ (สีแดง)", type: "Cheer", forColor: "แดง", deadline: "2026-10-15T00:00:00" },
+            { id: 3, title: "สมัครนักกีฬาวอลเลย์บอล (สีน้ำเงิน)", type: "Sports", forColor: "น้ำเงิน", deadline: "2026-11-01T00:00:00" },
+            { id: 4, title: "Boardgame Night", type: "Casual", forColor: "all", deadline: "2026-08-20T20:00:00" }
+        ];
+
+        function renderActivities(userData) {
+            const container = document.getElementById('activity-cards-container');
+            container.innerHTML = ''; // ล้างของเก่า
+
+            const userColor = userData.team_color;
+
+            mockActivities.forEach(act => {
+                // กรองกิจกรรม: ให้เห็นแค่ "all" กับ "สีตัวเอง"
+                if (act.forColor !== 'all' && act.forColor !== userColor && userColor !== 'none') {
+                    return; // ข้าม (ไม่โชว์)
+                }
+
+                // คำนวณ Countdown (แบบง่ายๆ โชว์แค่ วัน)
+                const target = new Date(act.deadline).getTime();
+                const now = new Date().getTime();
+                const diff = target - now;
+                
+                let timeStatus = "";
+                let isClosed = false;
+
+                if (diff < 0) {
+                    timeStatus = "ปิดรับสมัครแล้ว";
+                    isClosed = true;
+                } else {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    timeStatus = `เหลือเวลา ${days} วัน`;
+                }
+
+                // สร้าง HTML การ์ด
+                const cardHtml = `
+                    <div class="dynamic-card p-6 flex flex-col justify-between h-full">
+                        <div>
+                            <span class="px-2 py-1 rounded bg-slate-700/50 text-[10px] uppercase font-bold text-slate-400 border border-slate-600 mb-3 inline-block">${act.type}</span>
+                            <h3 class="font-bold text-lg text-white mb-2 leading-tight">${act.title}</h3>
+                            <p class="text-sm ${isClosed ? 'text-red-400' : 'text-yellow-500'} font-bold flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                ${timeStatus}
+                            </p>
+                        </div>
+                        <button class="mt-6 w-full py-2 rounded-lg font-bold transition-all ${isClosed ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'btn-primary shadow-lg shadow-[var(--primary)]/20'}" ${isClosed ? 'disabled' : ''}>
+                            ${isClosed ? 'หมดเวลา' : 'ดูรายละเอียด & สมัคร'}
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- 5. ลอจิก Panel ตั้งค่าธีม ---
+        btnThemeSettings.addEventListener('click', () => {
+            themePanel.classList.remove('translate-x-full');
+        });
+
+        document.getElementById('close-theme-btn').addEventListener('click', () => {
+            themePanel.classList.add('translate-x-full');
+        });
+
+        // อัปเดตเลข Radius แบบ Realtime เวลาเลื่อนหลอด
+        document.getElementById('setting-radius').addEventListener('input', (e) => {
+            document.getElementById('radius-val').innerText = e.target.value + 'px';
+        });
+
+        // บันทึกธีมลง DB
+        document.getElementById('btn-save-theme').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save-theme');
+            btn.innerText = "กำลังบันทึก...";
+            
+            const newTheme = {
+                logoUrl: document.getElementById('setting-logo').value,
+                title: document.getElementById('setting-title').value,
+                slogan: document.getElementById('setting-slogan').value,
+                primary: document.getElementById('setting-color-primary').value,
+                cardBg: document.getElementById('setting-color-card').value,
+                bgColor: document.getElementById('setting-color-bg').value,
+                radius: document.getElementById('setting-radius').value
+            };
+
+            try {
+                await setDoc(themeDocRef, newTheme);
+                alert('อัปเดตธีมเว็บสำเร็จ! ผู้ใช้งานทุกคนจะเห็นการเปลี่ยนแปลงนี้');
+            } catch (error) {
+                console.error(error);
+                alert('เกิดข้อผิดพลาดในการเซฟ');
+            } finally {
+                btn.innerText = "บันทึกธีมลงฐานข้อมูล";
+                themePanel.classList.add('translate-x-full'); // ซ่อนพาเนล
+            }
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeluFest #1 - Ticket Registration</title>
+    <title>FeluFest - Ticket Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Mitr:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -26,47 +26,52 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        .ticket-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
+        
+        /* ใส่คลาส admin-mode เมื่อแอดมินล็อกอิน เพื่อแสดงปุ่มแก้ไข */
+        body.admin-mode .ticket-card:hover { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
+        body:not(.admin-mode) .ticket-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
 
         .btn-primary { background-color: var(--primary); color: #fff; transition: all 0.2s; }
         .btn-primary:hover { background-color: var(--primary-hover); transform: scale(1.02); }
 
-        /* Custom Checkbox/Radio */
-        .custom-radio:checked + div {
-            border-color: var(--primary);
-            background-color: #fffbeb;
-        }
+        .custom-radio:checked + div { border-color: var(--primary); background-color: #fffbeb; }
         
         .pulse-red { animation: pulseRed 2s infinite; }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* สไตล์สำหรับปุ่ม Edit บนการ์ด (โชว์เฉพาะ Admin) */
+        .admin-edit-btn { display: none; position: absolute; top: 10px; right: 10px; background: #3b82f6; color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 20; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        body.admin-mode .admin-edit-btn { display: flex; align-items: center; gap: 4px; }
+        body.admin-mode .admin-edit-btn:hover { background: #2563eb; transform: scale(1.05); }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #22c55e; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #22c55e; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20">
 
-    <!-- Navbar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='index.html'">
                 <img src="https://i.imgur.com/G53A5aJ.png" alt="Logo" class="h-12 w-auto">
-                <h1 class="text-2xl font-heading text-slate-800 tracking-wide">FeluFest #1</h1>
+                <h1 class="text-2xl font-heading text-slate-800 tracking-wide">FeluFest</h1>
             </div>
             <div class="flex items-center gap-4">
-                <button id="btn-admin-panel" class="hidden text-sm font-bold bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700">⚙️ Admin Settings</button>
+                <button id="btn-admin-master" class="hidden text-sm font-bold bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 shadow-md">⚙️ Master Settings</button>
                 <div id="user-profile" class="flex items-center gap-2">
                     <span id="user-name" class="font-bold text-sm">กำลังโหลด...</span>
-                    <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-slate-200">
+                    <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-[var(--primary)] object-cover">
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- FOMO Countdown Banner -->
-    <div id="countdown-banner" class="bg-red-500 text-white py-3 px-4 text-center font-bold relative overflow-hidden shadow-md">
+    <!-- FOMO Countdown Banner (ซ่อนไว้ก่อนถ้ายาวเป็น Regular) -->
+    <div id="countdown-banner" class="hidden bg-red-500 text-white py-3 px-4 text-center font-bold relative overflow-hidden shadow-md">
         <div class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8cGF0aCBkPSJNMCAwTDggOFpNOCAwTDAgOFoiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2Utb3BhY2l0eT0iMC4xIi8+Cjwvc3ZnPg==')]"></div>
         <span class="relative z-10 flex items-center justify-center gap-2 text-lg">
             🔥 <span id="pricing-phase-text">EARLY BIRD TICKET หมดเขตใน:</span> 
@@ -75,271 +80,265 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-6xl mx-auto w-full px-4 mt-12">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-heading text-slate-800 mb-4">Choose Your Ticket</h2>
-            <p class="text-slate-500">เลือกประเภทบัตรที่เหมาะกับคุณ พร้อมรับสิทธิพิเศษมากมายภายในงาน</p>
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 mt-10">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-heading text-slate-800 mb-2">Ticket Categories</h2>
+            <p class="text-slate-500 font-medium">เลือกประเภทการเข้าร่วมงานที่คุณสนใจ (เนื้อหาด้านล่างอัปเดตแบบ Real-time)</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <!-- 1. Spectator Ticket -->
-            <div class="ticket-card flex flex-col">
-                <div class="p-8 flex-1">
-                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">Best for Fans</span>
-                    <h3 class="text-3xl font-heading mb-2">Spectator</h3>
-                    <p class="text-slate-500 text-sm mb-6">บัตรเข้าชมงานสำหรับสายเชียร์ พร้อมระบบสุ่มสีประจำตัว (House Sorting)</p>
-                    
-                    <div class="mb-6">
-                        <span class="text-sm text-slate-400 line-through mr-2" id="price-spectator-normal-old">590฿</span>
-                        <span class="text-4xl font-heading text-[var(--primary)]" id="price-spectator-normal">490฿</span>
-                    </div>
-
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8 font-medium">
-                        <li class="flex items-center gap-2">✅ สิทธิ์สุ่มสีประจำตัว (หมวกคัดสรร)</li>
-                        <li class="flex items-center gap-2">✅ สิทธิ์เข้าชมการแข่งขันทุกรายการ</li>
-                        <li class="flex items-center gap-2">✅ สายรัดข้อมือ (Wristband) ประจำสี</li>
-                        <li class="flex items-center gap-2 opacity-50">❌ ที่จอดรถ VIP</li>
-                        <li class="flex items-center gap-2 opacity-50">❌ บริการฝากของ (Cloakroom)</li>
-                    </ul>
-                </div>
-                <div class="p-4 bg-slate-50 border-t border-slate-100">
-                    <button onclick="openForm('spectator')" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition">ลงทะเบียนซื้อบัตร</button>
-                </div>
-            </div>
-
-            <!-- 2. Athlete Ticket -->
-            <div class="ticket-card flex flex-col border-[var(--primary)] shadow-[0_0_20px_rgba(245,158,11,0.2)] transform md:-translate-y-4">
-                <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl z-10 pulse-red">Selling Fast</div>
-                <div class="p-8 flex-1">
-                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">For Competitors</span>
-                    <h3 class="text-3xl font-heading mb-2">Athlete</h3>
-                    <p class="text-slate-500 text-sm mb-6">บัตรสำหรับนักกีฬา ลงแข่งได้สูงสุด 2 รายการ พร้อมสิทธิ์เข้าใช้ Athlete's Room</p>
-                    
-                    <div class="mb-6">
-                        <span class="text-sm text-slate-400 mr-2">ราคาคงที่</span>
-                        <span class="text-4xl font-heading text-[var(--primary)]" id="price-athlete">690฿</span>
-                    </div>
-
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8 font-medium">
-                        <li class="flex items-center gap-2">🏆 สิทธิ์ลงแข่งกีฬารอง (สูงสุด 2 รายการ)</li>
-                        <li class="flex items-center gap-2">✅ เข้าใช้ห้องพักนักกีฬา (Athlete's Room)</li>
-                        <li class="flex items-center gap-2">✅ เสื้อกีฬาประจำสี (Jersey)</li>
-                        <li class="flex items-center gap-2">✅ สิทธิ์สุ่มสีประจำตัว</li>
-                    </ul>
-                    
-                    <!-- โควต้ากีฬา Real-time -->
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
-                        <p class="font-bold mb-2 text-slate-700 text-center">อัปเดตโควต้ากีฬารอง</p>
-                        <div id="quota-display" class="space-y-2">
-                            <!-- JS จะดึงมาใส่ตรงนี้ -->
-                            <div class="flex justify-between"><span>กำลังโหลด...</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 bg-[var(--primary)] border-t border-[var(--primary-hover)]">
-                    <button onclick="openForm('athlete')" class="w-full bg-white text-slate-900 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm">ลงทะเบียนนักกีฬา</button>
-                </div>
-            </div>
-
-            <!-- 3. Photographer Ticket -->
-            <div class="ticket-card flex flex-col">
-                <div class="p-8 flex-1">
-                    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">Limited</span>
-                    <h3 class="text-3xl font-heading mb-2">Photographer</h3>
-                    <p class="text-slate-500 text-sm mb-6">บัตรช่างภาพ ถ่ายรูปได้อิสระทั่วงาน พร้อมโซนชั้น 2 (ไม่มีสีประจำตัว)</p>
-                    
-                    <div class="mb-6">
-                        <span class="text-4xl font-heading text-[var(--primary)]" id="price-photo">990฿</span>
-                    </div>
-
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8 font-medium">
-                        <li class="flex items-center gap-2">📷 สิทธิ์เข้าพื้นที่ชั้น 2 (Photo Booth Zone)</li>
-                        <li class="flex items-center gap-2">✅ ป้ายห้อยคอ Photographer Pass</li>
-                        <li class="flex items-center gap-2">✅ บริการฝากของ (Cloakroom)</li>
-                        <li class="flex items-center gap-2">✅ ที่จอดรถ VIP</li>
-                    </ul>
-                </div>
-                <div class="p-4 bg-slate-50 border-t border-slate-100">
-                    <button onclick="openForm('photo')" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition">ลงทะเบียนช่างภาพ</button>
-                </div>
-            </div>
+        <!-- Container สำหรับเรนเดอร์การ์ดตั๋ว -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="tickets-container">
+            <!-- การ์ดจะถูกสร้างด้วย JavaScript -->
+            <div class="col-span-full text-center py-10 text-slate-400 font-bold">กำลังดึงข้อมูลบัตร...</div>
         </div>
     </main>
 
-    <!-- Modal Form Registration -->
-    <div id="form-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <!-- ============================================== -->
+    <!-- Modal: สำหรับผู้ใช้ "กรอกฟอร์ม" สมัคร / ซื้อตั๋ว -->
+    <!-- ============================================== -->
+    <div id="form-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative max-h-[90vh] flex flex-col scale-95 transition-transform duration-300 transform" id="form-modal-content">
             
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
-                <h2 id="form-title" class="text-2xl font-heading text-slate-800">กรอกข้อมูลส่วนตัว</h2>
-                <button onclick="closeForm()" class="text-slate-400 hover:text-slate-800 bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10 shadow-sm">
+                <div>
+                    <h2 id="form-title" class="text-2xl font-heading text-slate-800">Registration</h2>
+                    <p id="form-subtitle" class="text-xs text-slate-500 font-bold tracking-wider uppercase mt-1">กรอกข้อมูลส่วนตัว</p>
+                </div>
+                <button onclick="closeForm()" class="text-slate-400 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold transition-colors">✕</button>
             </div>
 
             <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <form id="registration-form" class="space-y-6">
-                    <input type="hidden" id="ticket-type" value="">
-                    
-                    <!-- ข้อมูลพื้นฐาน (แสดงทุกประเภท) -->
+                    <input type="hidden" id="ticket-id" value="">
+                    <input type="hidden" id="ticket-category" value=""> <!-- mainSport, minorSport, spectator, photo -->
+
+                    <!-- ข้อมูลพื้นฐาน -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">ชื่อ-นามสกุลจริง</label>
-                            <input type="text" id="fullname" required class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                            <input type="text" id="fullname" required class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-[var(--primary)] outline-none bg-slate-50 focus:bg-white transition-colors">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">เบอร์ติดต่อ</label>
-                            <input type="tel" id="phone" required class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                            <input type="tel" id="phone" required class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-[var(--primary)] outline-none bg-slate-50 focus:bg-white transition-colors">
                         </div>
                     </div>
 
-                    <!-- เฉพาะ Spectator & Athlete -->
+                    <!-- ฟอร์มเสริม 1: สุขภาพและกายภาพ (ไม่โชว์ใน Photo) -->
                     <div id="health-section" class="space-y-6">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">เพศ (Gender)</label>
-                                <select id="gender" class="w-full border border-slate-300 rounded-xl p-3 bg-white">
-                                    <option value="ชาย">ชาย</option>
-                                    <option value="หญิง">หญิง</option>
-                                    <option value="อื่นๆ">อื่นๆ / ไม่ระบุ</option>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">เพศกำเนิด (Biological Sex)</label>
+                                <select id="gender" class="w-full border border-slate-300 rounded-xl p-3 bg-white focus:ring-2 focus:ring-[var(--primary)] outline-none cursor-pointer">
+                                    <option value="" disabled selected>เลือกเพศ...</option>
+                                    <option value="ชาย">ชาย (Male)</option>
+                                    <option value="หญิง">หญิง (Female)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">ส่วนสูง (cm) *มีผลต่อที่นั่ง</label>
-                                <input type="number" id="height" placeholder="เช่น 170" class="w-full border border-slate-300 rounded-xl p-3">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">ส่วนสูง (เซนติเมตร)</label>
+                                <input type="number" id="height" placeholder="เช่น 170" class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-[var(--primary)] outline-none bg-slate-50 focus:bg-white">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">ข้อมูลสุขภาพ (สำคัญเพื่อความปลอดภัย)</label>
-                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                <input type="text" id="disease" placeholder="โรคประจำตัว (ถ้าไม่มี ข้ามได้)" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-                                <input type="text" id="allergy_food" placeholder="อาหารที่แพ้" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-                                <input type="text" id="allergy_drug" placeholder="ยาที่แพ้" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-                                <input type="text" id="injury" placeholder="อาการบาดเจ็บที่ต้องระวัง (เช่น เข่า, หลัง)" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                            <label class="block text-sm font-bold text-slate-700 mb-1">ข้อมูลสุขภาพ (เพื่อความปลอดภัยของตัวท่านเอง)</label>
+                            <div class="space-y-3 bg-red-50/50 p-4 rounded-xl border border-red-100">
+                                <input type="text" id="disease" placeholder="โรคประจำตัว (ถ้าไม่มี ข้ามได้)" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-red-300 outline-none">
+                                <input type="text" id="allergy_food" placeholder="อาหารที่แพ้" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-red-300 outline-none">
+                                <input type="text" id="allergy_drug" placeholder="ยาที่แพ้" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-red-300 outline-none">
+                                <input type="text" id="injury" placeholder="อาการบาดเจ็บที่ต้องระวัง (เช่น หัวเข่า, หลัง)" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-red-300 outline-none">
                             </div>
                         </div>
                     </div>
 
-                    <!-- เฉพาะ Spectator: อัปเกรดบัตร -->
-                    <div id="upgrade-section" class="hidden">
-                        <label class="block text-sm font-bold text-slate-700 mb-3">เลือกแพ็กเกจบัตร (สิทธิประโยชน์)</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="spec_package" value="normal" class="peer sr-only custom-radio" checked onchange="updateSummary()">
-                                <div class="border-2 border-slate-200 rounded-xl p-4 transition-all">
-                                    <p class="font-bold text-slate-800">Normal</p>
-                                    <p class="text-[var(--primary)] font-heading text-lg my-1" id="label-spec-normal">490฿</p>
-                                    <p class="text-xs text-slate-500">- Wristband<br>- สุ่มสี</p>
-                                </div>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="spec_package" value="upgrade" class="peer sr-only custom-radio" onchange="updateSummary()">
-                                <div class="border-2 border-slate-200 rounded-xl p-4 transition-all relative overflow-hidden">
-                                    <div class="absolute top-0 right-0 bg-[var(--primary)] text-xs font-bold px-2 py-1 rounded-bl-lg">Recommend</div>
-                                    <p class="font-bold text-slate-800">Upgrade VIP</p>
-                                    <p class="text-[var(--primary)] font-heading text-lg my-1" id="label-spec-upgrade">590฿</p>
-                                    <p class="text-xs text-slate-500">- ทุกอย่างใน Normal<br>- ที่จอดรถ VIP<br>- กระเป๋าผ้า Merch<br>- บริการฝากของ</p>
-                                </div>
-                            </label>
+                    <!-- ฟอร์มเสริม 2: กีฬาหลัก (แบบทีม) -->
+                    <div id="team-section" class="hidden bg-indigo-50 p-5 rounded-xl border border-indigo-200">
+                        <h4 class="font-bold text-indigo-800 mb-2">ข้อมูลทีม (Team Roster)</h4>
+                        <p class="text-xs text-indigo-600 mb-4">*โปรดระบุจำนวนลูกทีม และกรอกชื่อ-นามสกุล พร้อมอีเมลของลูกทีมให้ครบถ้วน เพื่อใช้ในการติดต่อ</p>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-indigo-900 mb-1">จำนวนลูกทีม (รวมกัปตัน)</label>
+                            <input type="number" id="team-size" min="1" max="20" value="1" class="w-24 border border-indigo-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-center" onchange="renderTeamInputs()">
+                        </div>
+
+                        <div id="team-members-container" class="space-y-3">
+                            <!-- ช่องกรอกชื่อลูกทีมจะถูก Generate ตรงนี้ -->
                         </div>
                     </div>
 
-                    <!-- เฉพาะ Athlete: เลือกกีฬา -->
-                    <div id="sport-section" class="hidden bg-yellow-50 p-5 rounded-xl border border-yellow-200">
-                        <h4 class="font-bold text-yellow-800 mb-2">ลงทะเบียนกีฬารอง (เลือกได้สูงสุด 2 ประเภท)</h4>
-                        <p class="text-xs text-yellow-600 mb-4">*หมายเหตุ: สำหรับกีฬาหลักแบบทีม กัปตันทีมจะเป็นคนซื้อตั๋วเหมาและส่งลิงก์ให้ลูกทีมทีหลัง</p>
+                    <!-- ฟอร์มเสริม 3: กีฬารอง (เลือกกีฬา) -->
+                    <div id="minor-sport-section" class="hidden bg-yellow-50 p-5 rounded-xl border border-yellow-200">
+                        <h4 class="font-bold text-yellow-800 mb-2">เลือกกีฬารอง (Minor Sport)</h4>
+                        <p class="text-xs text-yellow-600 mb-4">*เลือกได้เพียง 1 รายการเท่านั้น ระบบจะยึดตามลำดับการชำระเงิน</p>
                         
-                        <div id="sport-checkboxes" class="space-y-2">
-                            <!-- JS จะเรนเดอร์ Checkbox กีฬาตรงนี้ พร้อมบอกจำนวนโควต้า -->
+                        <div id="sport-radio-container" class="space-y-3">
+                            <!-- Radio เลือกกีฬาจะถูกดึงมาจาก DB และวาดตรงนี้ -->
+                        </div>
+                    </div>
+
+                    <!-- ฟอร์มเสริม 4: อัปเกรด (Spectator) -->
+                    <div id="upgrade-section" class="hidden">
+                        <label class="block text-sm font-bold text-slate-700 mb-3">เลือกแพ็กเกจบัตร (Packages)</label>
+                        <div class="grid grid-cols-2 gap-4" id="package-options-container">
+                            <!-- จะดึงข้อมูล Normal/Upgrade มาใส่ตรงนี้แบบอัตโนมัติ -->
                         </div>
                     </div>
 
                 </form>
             </div>
 
-            <!-- Footer / Summary -->
+            <!-- Footer ของ Modal -->
             <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl">
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex justify-between items-center mb-4" id="summary-price-box">
                     <span class="text-slate-500 font-bold">ยอดรวมที่ต้องชำระ:</span>
                     <span id="total-price" class="text-3xl font-heading text-[var(--primary)]">0฿</span>
                 </div>
-                <button id="btn-submit-form" class="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-slate-900 font-bold text-lg py-4 rounded-xl transition shadow-md">
-                    ไปหน้าชำระเงิน
+                
+                <!-- ปุ่มส่งฟอร์ม (Text จะเปลี่ยนตามประเภทบัตร เช่น ส่งใบสมัครรอติดต่อกลับ หรือ ไปหน้าจ่ายเงิน) -->
+                <button id="btn-submit-form" class="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-slate-900 font-bold text-lg py-4 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                    ดำเนินการต่อ
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Admin Configuration Panel (ซ่อน) -->
-    <div id="admin-panel" class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-[200] transform translate-x-full transition-transform duration-300 flex flex-col">
-        <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-800 text-white">
-            <h2 class="text-xl font-bold">⚙️ ตั้งค่าระบบตั๋ว</h2>
-            <button onclick="document.getElementById('admin-panel').classList.add('translate-x-full')" class="hover:text-red-400">✕</button>
-        </div>
-        <div class="p-6 overflow-y-auto flex-1 space-y-6">
+
+    <!-- ============================================== -->
+    <!-- Modal: สำหรับแอดมิน "สร้าง/แก้ไขตั๋ว" (Card Editor) -->
+    <!-- ============================================== -->
+    <div id="admin-card-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative max-h-[90vh] flex flex-col scale-95 transition-transform duration-300 transform border-4 border-blue-500" id="admin-card-content">
             
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <label class="block font-bold text-sm mb-2 text-red-500">วันสิ้นสุด Early Bird</label>
-                <input type="datetime-local" id="admin-early-deadline" class="w-full border p-2 rounded">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-blue-50 rounded-t-3xl">
+                <div>
+                    <h2 class="text-2xl font-heading text-blue-800">Card Editor</h2>
+                    <p class="text-xs text-blue-600 font-bold uppercase mt-1">แก้ไขข้อมูลการ์ดใบนี้</p>
+                </div>
+                <button onclick="closeAdminCardModal()" class="text-slate-400 hover:text-slate-800 bg-white rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
             </div>
 
-            <div>
-                <h3 class="font-bold mb-3 border-b pb-2">ราคาบัตร Spectator</h3>
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between items-center">
-                        <span>Normal (Early)</span>
-                        <input type="number" id="admin-p-spec-norm-early" class="w-20 border p-1 rounded text-right">
+            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+                <input type="hidden" id="edit-card-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ป้ายกำกับ (Tag)</label>
+                        <input type="text" id="edit-card-tag" placeholder="เช่น Best for Fans" class="w-full border p-2 rounded-lg bg-slate-50">
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span>Normal (Regular)</span>
-                        <input type="number" id="admin-p-spec-norm-reg" class="w-20 border p-1 rounded text-right">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">ชื่อบัตร/ชื่อกีฬา</label>
+                        <input type="text" id="edit-card-title" class="w-full border p-2 rounded-lg font-bold">
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span>Upgrade (Early)</span>
-                        <input type="number" id="admin-p-spec-up-early" class="w-20 border p-1 rounded text-right">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">คำอธิบาย</label>
+                    <textarea id="edit-card-desc" rows="2" class="w-full border p-2 rounded-lg text-sm"></textarea>
+                </div>
+
+                <!-- ราคา: ซ่อนถ้าเป็นการ์ดที่ให้แค่ "ส่งใบสมัคร" -->
+                <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                    <label class="block text-xs font-bold text-yellow-800 mb-2 uppercase">ตั้งราคา (บาท)</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] text-yellow-600">ราคาปกติ (Regular)</label>
+                            <input type="number" id="edit-card-price-reg" class="w-full border p-2 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-yellow-600">ราคาพรีเซล (Early Bird)</label>
+                            <input type="number" id="edit-card-price-early" class="w-full border p-2 rounded-lg">
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span>Upgrade (Regular)</span>
-                        <input type="number" id="admin-p-spec-up-reg" class="w-20 border p-1 rounded text-right">
+                </div>
+
+                <!-- หากเป็นตั๋วอัปเกรด (Spectator) จะมีช่องให้ใส่ราคาอัปเกรด -->
+                <div id="edit-upgrade-pricing" class="hidden bg-orange-50 p-4 rounded-xl border border-orange-200">
+                    <label class="block text-xs font-bold text-orange-800 mb-2 uppercase">ตั้งราคาแพ็กเกจ Upgrade VIP</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] text-orange-600">ราคา Upgrade (Regular)</label>
+                            <input type="number" id="edit-card-price-up-reg" class="w-full border p-2 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-orange-600">ราคา Upgrade (Early)</label>
+                            <input type="number" id="edit-card-price-up-early" class="w-full border p-2 rounded-lg">
+                        </div>
                     </div>
+                </div>
+
+                <!-- สิทธิประโยชน์ (Benefits) -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase flex justify-between">
+                        สิทธิประโยชน์ (แยกบรรทัดละข้อ)
+                    </label>
+                    <p class="text-[10px] text-slate-400 mb-2">เคล็ดลับ: นำหน้าด้วย + เพื่อแสดง ✅, นำหน้าด้วย - เพื่อแสดง ❌ (จาง)</p>
+                    <textarea id="edit-card-benefits" rows="5" class="w-full border p-2 rounded-lg text-sm font-mono leading-relaxed" placeholder="+ สิทธิ์เข้าร่วมงาน\n+ สุ่มสี\n- ที่จอดรถ"></textarea>
                 </div>
             </div>
 
-            <div>
-                <h3 class="font-bold mb-3 border-b pb-2">ราคาบัตรอื่นๆ (คงที่)</h3>
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between items-center">
-                        <span>Athlete</span>
-                        <input type="number" id="admin-p-ath" class="w-20 border p-1 rounded text-right">
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span>Photographer</span>
-                        <input type="number" id="admin-p-photo" class="w-20 border p-1 rounded text-right">
-                    </div>
+            <div class="p-6 border-t bg-slate-50 rounded-b-3xl">
+                <button onclick="saveCardEdits()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md">บันทึกข้อมูลการ์ด (อัปเดต Real-time)</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- Sidebar: Admin Master Settings (ตั้งค่าภาพรวม) -->
+    <!-- ============================================== -->
+    <div id="admin-master-panel" class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-[200] transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white">
+            <h2 class="text-xl font-bold">⚙️ Master Settings</h2>
+            <button onclick="document.getElementById('admin-master-panel').classList.add('translate-x-full')" class="hover:text-red-400 font-bold text-lg">✕</button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto flex-1 space-y-8 bg-slate-50">
+            
+            <!-- 1. ตั้งค่าสถานะการรับสมัครกีฬาหลัก -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">🏆 กีฬาหลัก (แชร์บอล แบบทีม)</h3>
+                
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-bold text-slate-600">เปิดรับสมัครอยู่หรือไม่?</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="admin-main-sport-status" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+                <p class="text-[10px] text-slate-400">*ถ้าปิด ปุ่มจะกลายเป็น "ปิดรับสมัคร" และกดไม่ได้</p>
+            </div>
+
+            <!-- 2. ตั้งเวลา Early Bird -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">⏰ ระยะเวลาพรีเซล (Early Bird)</h3>
+                <label class="block text-xs font-bold text-red-500 mb-1 uppercase">วันและเวลาสิ้นสุด</label>
+                <input type="datetime-local" id="admin-early-deadline" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50">
+                <p class="text-[10px] text-slate-400 mt-2">*เมื่อถึงเวลาที่กำหนด ระบบจะเปลี่ยนราคาหน้าเว็บจากการ์ดทุกใบเป็นราคา Regular ทันที</p>
+            </div>
+
+            <!-- 3. จัดการกีฬารอง & โควต้า (Dynamic Minor Sports) -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b pb-2">
+                    <h3 class="font-bold text-slate-800">🏅 กีฬารอง (และโควต้ารวม)</h3>
+                    <button onclick="addMinorSportRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200">+ เพิ่มกีฬา</button>
+                </div>
+                
+                <div id="admin-minor-sports-list" class="space-y-3">
+                    <!-- รายการกีฬาจะถูกสร้างที่นี่ -->
                 </div>
             </div>
 
-            <div>
-                <h3 class="font-bold mb-3 border-b pb-2">โควต้ากีฬารอง (ต่อสี)</h3>
-                <div class="space-y-3 text-sm" id="admin-quota-list">
-                    <div class="flex justify-between items-center">
-                        <span>แบดมินตัน</span>
-                        <input type="number" id="q-badminton" class="w-20 border p-1 rounded text-right">
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span>ปิงปอง</span>
-                        <input type="number" id="q-pingpong" class="w-20 border p-1 rounded text-right">
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span>แชร์บอล</span>
-                        <input type="number" id="q-chairball" class="w-20 border p-1 rounded text-right">
-                    </div>
-                </div>
+            <!-- 4. ระบบ Blacklist -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">⛔ ระบบ Blacklist (แบนแบบเนียนๆ)</h3>
+                <p class="text-xs text-slate-500 mb-2">รายชื่อหรืออีเมลเหล่านี้ จะขึ้นหน้าจอว่า "ทำรายการไม่สำเร็จชั่วคราว" (1 บรรทัดต่อ 1 คน)</p>
+                <textarea id="admin-blacklist" rows="4" class="w-full border border-slate-300 p-2 rounded-lg text-sm bg-red-50 focus:bg-white" placeholder="somchai@mail.com\nมารวย มั่งมี"></textarea>
             </div>
 
         </div>
-        <div class="p-6 border-t border-slate-200">
-            <button id="btn-save-admin" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700">บันทึกการตั้งค่า</button>
+        <div class="p-6 border-t border-slate-200 bg-white">
+            <button id="btn-save-master" class="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-slate-900 font-bold text-lg py-3 rounded-xl transition shadow-md">บันทึกการตั้งค่าระบบ</button>
         </div>
     </div>
 
@@ -347,9 +346,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🔥 Firebase Config ของคุณ 🔥
+        // 🔥 Firebase Config (แทนด้วยของจริง) 🔥
         const firebaseConfig = {
             apiKey: "AIzaSyB1_nTNwucSl37tTitbxTP18bSCK5iWlOI",
             authDomain: "felufest-family.firebaseapp.com",
@@ -362,192 +361,301 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
         const ADMIN_EMAILS = ['felunadreamplace.official@gmail.com']; 
 
-        // State & Variables
+        // ตัวแปรเก็บ State ของระบบ
         let currentUserId = null;
+        let currentUserEmail = "";
+        let currentUserName = "";
+        let isAdmin = false;
+        
+        let masterSettings = { early_bird_deadline: "", main_sport_open: true, blacklist: [] };
+        let ticketsData = {}; // เก็บข้อมูลการ์ดตั๋วที่ดึงมาจาก DB
+        let minorSportsData = {}; // เก็บข้อมูลกีฬารอง { "ชื่อกีฬา": {quota: 10, registered: 0} }
         let isEarlyBird = true;
-        let currentPrices = {};
-        let currentFormType = '';
-        let sportsInventory = {};
+        let currentFormType = ''; // 'main_sport', 'minor_sport', 'spectator', 'photo'
 
-        // --- 1. Auth & Admin ---
+        // ==========================================
+        // 1. Auth & Initial DB Listeners
+        // ==========================================
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
+                currentUserEmail = user.email;
+                currentUserName = user.displayName;
+                
                 document.getElementById('user-name').innerText = user.displayName;
                 document.getElementById('user-avatar').src = user.photoURL;
 
                 if (ADMIN_EMAILS.includes(user.email)) {
-                    document.getElementById('btn-admin-panel').classList.remove('hidden');
+                    isAdmin = true;
+                    document.body.classList.add('admin-mode');
+                    document.getElementById('btn-admin-master').classList.remove('hidden');
                 }
             } else {
-                // ถ้ายังไม่ล็อกอิน ให้กลับไปหน้า index.html
-                window.location.href = "index.html";
+                window.location.href = "index.html"; // เตะกลับไปล็อกอิน
             }
         });
 
-        document.getElementById('btn-admin-panel').addEventListener('click', () => {
-            document.getElementById('admin-panel').classList.remove('translate-x-full');
-        });
-
-        // --- 2. Listen to Firestore Settings (Real-time Prices & Deadlines) ---
-        onSnapshot(doc(db, 'settings', 'ticketing'), (docSnap) => {
+        // ดึงการตั้งค่าหลัก (Master Settings)
+        onSnapshot(doc(db, 'settings', 'master'), (docSnap) => {
             if (docSnap.exists()) {
-                const data = docSnap.data();
-                currentPrices = data.prices;
+                masterSettings = docSnap.data();
+                setupCountdown(masterSettings.early_bird_deadline);
                 
-                // คำนวณ Countdown
-                setupCountdown(data.early_bird_deadline);
-
-                // Update UI Prices
-                updatePricingUI();
-
-                // อัปเดตฟอร์ม Admin กลับ
-                if(document.getElementById('admin-p-spec-norm-early')) {
-                    document.getElementById('admin-early-deadline').value = data.early_bird_deadline;
-                    document.getElementById('admin-p-spec-norm-early').value = data.prices.spec_norm_early;
-                    document.getElementById('admin-p-spec-norm-reg').value = data.prices.spec_norm_reg;
-                    document.getElementById('admin-p-spec-up-early').value = data.prices.spec_up_early;
-                    document.getElementById('admin-p-spec-up-reg').value = data.prices.spec_up_reg;
-                    document.getElementById('admin-p-ath').value = data.prices.athlete;
-                    document.getElementById('admin-p-photo').value = data.prices.photo;
-                }
+                // อัปเดตฟอร์ม Master (ถ้าแอดมินดูอยู่)
+                document.getElementById('admin-early-deadline').value = masterSettings.early_bird_deadline || '';
+                document.getElementById('admin-main-sport-status').checked = masterSettings.main_sport_open;
+                document.getElementById('admin-blacklist').value = (masterSettings.blacklist || []).join('\n');
+                
+                renderTicketsUI(); // เรนเดอร์การ์ดใหม่เพราะสถานะเปิด/ปิด หรือ Phase อาจเปลี่ยน
             } else {
-                // Default Setup if empty
-                setDoc(doc(db, 'settings', 'ticketing'), {
+                // สร้าง Default ให้ถ้ายังไม่มี
+                setDoc(doc(db, 'settings', 'master'), {
                     early_bird_deadline: "2026-08-01T23:59:00",
-                    prices: { spec_norm_early: 490, spec_norm_reg: 590, spec_up_early: 590, spec_up_reg: 690, athlete: 690, photo: 990 }
+                    main_sport_open: true,
+                    blacklist: []
                 });
             }
         });
 
-        // --- 3. Listen to Sports Inventory (Real-time Slots) ---
-        onSnapshot(doc(db, 'inventory', 'sports'), (docSnap) => {
+        // ดึงข้อมูลการ์ดตั๋ว (Dynamic Tickets)
+        onSnapshot(doc(db, 'settings', 'tickets'), (docSnap) => {
             if (docSnap.exists()) {
-                sportsInventory = docSnap.data();
-                
-                // อัปเดต UI หน้าการ์ด
-                const display = document.getElementById('quota-display');
-                display.innerHTML = '';
-                for (const [sport, data] of Object.entries(sportsInventory)) {
-                    // คำนวณที่เหลือรวมทุกสีคร่าวๆ ให้ดู
-                    const totalLeft = (data.quota * 4) - data.registered; 
-                    display.innerHTML += `<div class="flex justify-between border-b border-slate-200 py-1"><span>${sport}</span> <span class="${totalLeft <= 0 ? 'text-red-500 font-bold' : 'text-slate-600'}">${totalLeft <= 0 ? 'FULL' : 'เหลือ '+totalLeft}</span></div>`;
-                }
-
-                // อัปเดต Checkbox ในฟอร์ม
-                renderSportCheckboxes();
-
-                // อัปเดตฟอร์ม Admin
-                document.getElementById('q-badminton').value = sportsInventory['แบดมินตัน']?.quota || 10;
-                document.getElementById('q-pingpong').value = sportsInventory['ปิงปอง']?.quota || 10;
-                document.getElementById('q-chairball').value = sportsInventory['แชร์บอล']?.quota || 10;
+                ticketsData = docSnap.data();
+                renderTicketsUI();
             } else {
-                setDoc(doc(db, 'inventory', 'sports'), {
+                // ข้อมูลการ์ดตั้งต้น (Default Blueprint)
+                const defaultTickets = {
+                    t1_main_sport: { 
+                        type: 'main_sport', tag: 'For Teams', title: 'กีฬาหลัก (แชร์บอล)', 
+                        desc: 'สมัครในรูปแบบทีม (กัปตันกรอกข้อมูลลูกทีม) รอผลคัดเลือกทางอีเมล', 
+                        benefits: '+ สิทธิ์ลงแข่งขันกีฬาหลัก\n+ เข้าใช้ Athlete\'s Room\n+ เสื้อแข่งประจำทีม', 
+                        price_reg: 0, price_early: 0 
+                    },
+                    t2_minor_sport: { 
+                        type: 'minor_sport', tag: 'Individual', title: 'กีฬารอง (Minor)', 
+                        desc: 'สมัครแข่งเดี่ยว โควต้าจำกัด (เลือกได้ 1 กีฬาเท่านั้น)', 
+                        benefits: '+ สิทธิ์ลงแข่งกีฬารอง 1 รายการ\n+ เข้าใช้ Athlete\'s Room\n+ สุ่มสี', 
+                        price_reg: 690, price_early: 690 
+                    },
+                    t3_spectator: { 
+                        type: 'spectator', tag: 'Best for Fans', title: 'Spectator', 
+                        desc: 'บัตรเข้าชมงานสำหรับสายเชียร์ พร้อมระบบสุ่มสีประจำตัว (House Sorting)', 
+                        benefits: '+ สิทธิ์สุ่มสีประจำตัว (หมวกคัดสรร)\n+ เข้าชมการแข่งขัน\n+ Wristband ประจำสี\n- ที่จอดรถ VIP\n- บริการฝากของ', 
+                        price_reg: 590, price_early: 490,
+                        has_upgrade: true, price_up_reg: 690, price_up_early: 590,
+                        upgrade_benefits: '+ ทุกอย่างใน Normal\n+ ที่จอดรถ VIP\n+ บริการฝากของ\n+ กระเป๋าผ้า Merch'
+                    },
+                    t4_photo: { 
+                        type: 'photo', tag: 'Limited', title: 'Photographer', 
+                        desc: 'บัตรช่างภาพ ถ่ายรูปได้อิสระทั่วงาน พร้อมโซนชั้น 2 (ไม่มีสีประจำตัว)', 
+                        benefits: '+ สิทธิ์เข้าพื้นที่ชั้น 2\n+ ป้ายห้อย Photographer Pass\n+ บริการฝากของ\n+ ที่จอดรถ VIP', 
+                        price_reg: 990, price_early: 990 
+                    }
+                };
+                setDoc(doc(db, 'settings', 'tickets'), defaultTickets);
+            }
+        });
+
+        // ดึงข้อมูลกีฬารองและโควต้า
+        onSnapshot(doc(db, 'settings', 'minor_sports'), (docSnap) => {
+            if (docSnap.exists()) {
+                minorSportsData = docSnap.data();
+                renderAdminMinorSportsList(); // เรนเดอร์ในฟอร์มแอดมิน
+            } else {
+                setDoc(doc(db, 'settings', 'minor_sports'), {
                     'แบดมินตัน': { quota: 10, registered: 0 },
-                    'ปิงปอง': { quota: 10, registered: 0 },
-                    'แชร์บอล': { quota: 10, registered: 0 }
+                    'ปิงปอง': { quota: 10, registered: 0 }
                 });
             }
         });
 
-        // --- Logic UI ---
-        let countdownTimer;
+
+        // ==========================================
+        // 2. Logic & UI Rendering
+        // ==========================================
+
+        // ควบคุม Countdown และ Phase
         function setupCountdown(deadlineStr) {
-            clearInterval(countdownTimer);
+            clearInterval(window.countdownTimer);
+            if(!deadlineStr) return;
+
             const deadline = new Date(deadlineStr).getTime();
             
-            countdownTimer = setInterval(() => {
+            window.countdownTimer = setInterval(() => {
                 const now = new Date().getTime();
                 const diff = deadline - now;
 
                 if (diff < 0) {
-                    clearInterval(countdownTimer);
+                    clearInterval(window.countdownTimer);
                     document.getElementById('timer-display').innerText = "หมดเขตแล้ว";
-                    document.getElementById('pricing-phase-text').innerText = "REGULAR TICKET เปิดจำหน่ายแล้ว";
+                    document.getElementById('pricing-phase-text').innerText = "REGULAR PHASE เปิดจำหน่ายแล้ว";
                     document.getElementById('countdown-banner').classList.replace('bg-red-500', 'bg-slate-800');
-                    isEarlyBird = false;
-                    updatePricingUI();
+                    if(isEarlyBird) { isEarlyBird = false; renderTicketsUI(); }
                     return;
                 }
 
-                isEarlyBird = true;
+                if(!isEarlyBird) { isEarlyBird = true; renderTicketsUI(); }
+                document.getElementById('countdown-banner').classList.remove('hidden');
+
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-
                 document.getElementById('timer-display').innerText = `${d}d ${h}h ${m}m ${s}s`;
             }, 1000);
         }
 
-        function updatePricingUI() {
-            if(!currentPrices.spec_norm_early) return;
-            
-            const specNormal = isEarlyBird ? currentPrices.spec_norm_early : currentPrices.spec_norm_reg;
-            const specUp = isEarlyBird ? currentPrices.spec_up_early : currentPrices.spec_up_reg;
-
-            // หน้าการ์ด
-            document.getElementById('price-spectator-normal').innerText = specNormal + "฿";
-            document.getElementById('price-spectator-normal-old').innerText = isEarlyBird ? currentPrices.spec_norm_reg + "฿" : "";
-            document.getElementById('price-athlete').innerText = currentPrices.athlete + "฿";
-            document.getElementById('price-photo').innerText = currentPrices.photo + "฿";
-
-            // ในฟอร์ม
-            document.getElementById('label-spec-normal').innerText = specNormal + "฿";
-            document.getElementById('label-spec-upgrade').innerText = specUp + "฿";
-
-            updateSummary();
-        }
-
-        function renderSportCheckboxes() {
-            const container = document.getElementById('sport-checkboxes');
-            // จำค่าที่ user ติ๊กไว้ก่อนวาดใหม่
-            const checkedSports = Array.from(document.querySelectorAll('.sport-check:checked')).map(cb => cb.value);
-            
+        // วาดการ์ดหน้าจอ (Dynamic Rendering)
+        function renderTicketsUI() {
+            const container = document.getElementById('tickets-container');
             container.innerHTML = '';
 
-            for (const [sport, data] of Object.entries(sportsInventory)) {
-                // สมมติว่านับรวมทุกสีก่อน (เพราะยังไม่ได้สุ่มสี)
-                const isFull = (data.quota * 4) - data.registered <= 0;
-                const isChecked = checkedSports.includes(sport) ? 'checked' : '';
+            // แปลง Object เป็น Array แล้ว sort ตามชื่อ key (t1, t2, t3...)
+            const tickets = Object.entries(ticketsData).sort((a,b) => a[0].localeCompare(b[0]));
+
+            tickets.forEach(([cardId, data]) => {
+                // จัดสไตล์ Benefits (+ สีเขียว, - สีเทา)
+                const benefitsHtml = data.benefits.split('\n').map(line => {
+                    const txt = line.trim();
+                    if(!txt) return '';
+                    if(txt.startsWith('+')) return `<li class="flex items-center gap-2">✅ ${txt.substring(1).trim()}</li>`;
+                    if(txt.startsWith('-')) return `<li class="flex items-center gap-2 opacity-40">❌ ${txt.substring(1).trim()}</li>`;
+                    return `<li class="flex items-center gap-2 text-slate-500">▪️ ${txt}</li>`;
+                }).join('');
+
+                // เช็คสถานะปุ่ม (สำหรับกีฬาหลัก)
+                let btnHtml = '';
+                let priceHtml = '';
                 
-                container.innerHTML += `
-                    <label class="flex items-center gap-3 p-3 border rounded-xl ${isFull ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-yellow-100 border-yellow-300'}">
-                        <input type="checkbox" name="sports" value="${sport}" class="sport-check w-5 h-5 accent-[var(--primary)]" ${isFull ? 'disabled' : ''} ${isChecked} onchange="handleSportLimit(this)">
-                        <div class="flex-1">
-                            <p class="font-bold text-slate-800">${sport}</p>
+                if (data.type === 'main_sport') {
+                    // กีฬาหลัก (ฟอร์มทีม -> ส่งอีเมล) ไม่โชว์ราคา
+                    const isOpen = masterSettings.main_sport_open;
+                    btnHtml = `<button onclick="openForm('${cardId}')" class="w-full ${isOpen ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} font-bold py-3 rounded-xl transition shadow-sm" ${!isOpen ? 'disabled' : ''}>
+                                ${isOpen ? 'ยื่นใบสมัคร (ฟอร์มทีม)' : 'ปิดรับสมัคร'}
+                               </button>`;
+                } else {
+                    // บัตรทั่วไป (มีราคา)
+                    const activePrice = isEarlyBird ? data.price_early : data.price_reg;
+                    const oldPrice = isEarlyBird && data.price_reg > data.price_early ? `<span class="text-sm text-slate-400 line-through mr-2">${data.price_reg}฿</span>` : '';
+                    priceHtml = `<div class="mb-6">${oldPrice}<span class="text-4xl font-heading text-[var(--primary)]">${activePrice}฿</span></div>`;
+                    
+                    btnHtml = `<button onclick="openForm('${cardId}')" class="w-full bg-[var(--primary)] text-white font-bold py-3 rounded-xl hover:bg-[var(--primary-hover)] transition shadow-sm">
+                                เลือกซื้อบัตร
+                               </button>`;
+                }
+
+                // โครงการ์ด
+                const cardHtml = `
+                    <div class="ticket-card p-6 flex flex-col justify-between h-full">
+                        <button class="admin-edit-btn" onclick="openAdminCardEditor('${cardId}')">✏️ Edit</button>
+                        
+                        <div>
+                            <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-4 inline-block border border-blue-100">${data.tag}</span>
+                            <h3 class="text-2xl font-heading mb-2 text-slate-800 leading-tight">${data.title}</h3>
+                            <p class="text-slate-500 text-xs mb-4 line-clamp-3">${data.desc}</p>
+                            ${priceHtml}
+                            <ul class="space-y-2 text-xs text-slate-700 font-medium mb-6">
+                                ${benefitsHtml}
+                            </ul>
                         </div>
-                        <span class="text-xs font-bold ${isFull ? 'text-red-500' : 'text-slate-500'}">${isFull ? 'เต็มแล้ว' : 'ว่าง'}</span>
-                    </label>
+                        <div class="mt-auto">
+                            ${btnHtml}
+                        </div>
+                    </div>
                 `;
-            }
+                container.innerHTML += cardHtml;
+            });
         }
 
-        // --- Form Modal Management ---
-        window.openForm = function(type) {
-            currentFormType = type;
+
+        // ==========================================
+        // 3. User Flow: การกรอกฟอร์มสมัคร/ซื้อ
+        // ==========================================
+        
+        window.openForm = function(cardId) {
+            const data = ticketsData[cardId];
+            if(!data) return;
+
+            currentFormType = data.type;
+            document.getElementById('ticket-id').value = cardId;
+            document.getElementById('ticket-category').value = currentFormType;
+            
+            // เปลี่ยนหัวข้อ Modal
+            document.getElementById('form-title').innerText = data.title;
+            document.getElementById('fullname').value = currentUserName;
+
+            // รีเซ็ตวิว
+            document.getElementById('health-section').classList.remove('hidden');
+            document.getElementById('team-section').classList.add('hidden');
+            document.getElementById('minor-sport-section').classList.add('hidden');
+            document.getElementById('upgrade-section').classList.add('hidden');
+            document.getElementById('summary-price-box').classList.remove('hidden');
+
+            const submitBtn = document.getElementById('btn-submit-form');
+
+            // จัดการตาม Type ของตั๋ว
+            if (currentFormType === 'photo') {
+                document.getElementById('health-section').classList.add('hidden');
+            } 
+            else if (currentFormType === 'main_sport') {
+                document.getElementById('team-section').classList.remove('hidden');
+                document.getElementById('summary-price-box').classList.add('hidden'); // ซ่อนราคา
+                submitBtn.innerText = "ส่งใบสมัคร (รอการติดต่อกลับ)";
+                renderTeamInputs(); // วาดช่องกรอกลูกทีม
+            } 
+            else if (currentFormType === 'minor_sport') {
+                document.getElementById('minor-sport-section').classList.remove('hidden');
+                submitBtn.innerText = "ไปหน้าชำระเงิน";
+                renderMinorSportRadios(); // วาดตัวเลือกกีฬา (Radio Button เลือกได้ 1 อัน)
+            } 
+            else if (currentFormType === 'spectator' && data.has_upgrade) {
+                document.getElementById('upgrade-section').classList.remove('hidden');
+                submitBtn.innerText = "ไปหน้าชำระเงิน";
+                
+                // วาดกล่องตัวเลือก Normal / Upgrade
+                const actNorm = isEarlyBird ? data.price_early : data.price_reg;
+                const actUp = isEarlyBird ? data.price_up_early : data.price_up_reg;
+                
+                // แปลง \n เป็น <br> ใน benefits
+                const formatBen = (str) => str.split('\n').map(l => `<span class="text-xs text-slate-500 block mb-1 truncate">${l}</span>`).join('');
+
+                document.getElementById('package-options-container').innerHTML = `
+                    <label class="relative cursor-pointer h-full">
+                        <input type="radio" name="spec_package" value="normal" class="peer sr-only custom-radio" checked onchange="updateFormSummary()">
+                        <div class="border-2 border-slate-200 rounded-xl p-4 transition-all h-full bg-white flex flex-col">
+                            <p class="font-bold text-slate-800">Normal</p>
+                            <p class="text-[var(--primary)] font-heading text-xl my-1">${actNorm}฿</p>
+                            <div class="mt-2 flex-1">${formatBen(data.benefits)}</div>
+                        </div>
+                    </label>
+                    <label class="relative cursor-pointer h-full">
+                        <input type="radio" name="spec_package" value="upgrade" class="peer sr-only custom-radio" onchange="updateFormSummary()">
+                        <div class="border-2 border-slate-200 rounded-xl p-4 transition-all h-full bg-white relative overflow-hidden flex flex-col">
+                            <div class="absolute top-0 right-0 bg-[var(--primary)] text-[10px] font-bold px-2 py-1 rounded-bl-lg text-white">VIP</div>
+                            <p class="font-bold text-slate-800">Upgrade</p>
+                            <p class="text-[var(--primary)] font-heading text-xl my-1">${actUp}฿</p>
+                            <div class="mt-2 flex-1">${formatBen(data.upgrade_benefits)}</div>
+                        </div>
+                    </label>
+                `;
+            } else {
+                submitBtn.innerText = "ไปหน้าชำระเงิน";
+            }
+
+            updateFormSummary();
+
+            // โชว์ Modal
             const modal = document.getElementById('form-modal');
             const content = document.getElementById('form-modal-content');
-            
-            // Setup Fields
-            document.getElementById('health-section').classList.toggle('hidden', type === 'photo');
-            document.getElementById('upgrade-section').classList.toggle('hidden', type !== 'spectator');
-            document.getElementById('sport-section').classList.toggle('hidden', type !== 'athlete');
-
-            const titles = { 'spectator': 'ลงทะเบียนสายเชียร์ (Spectator)', 'athlete': 'ลงทะเบียนนักกีฬา (Athlete)', 'photo': 'ลงทะเบียนช่างภาพ (Photographer)' };
-            document.getElementById('form-title').innerText = titles[type];
-
-            // Show
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 content.classList.remove('scale-95');
             }, 10);
-
-            updateSummary();
         };
 
         window.closeForm = function() {
@@ -562,86 +670,101 @@
             }, 300);
         };
 
-        // Limit Checkbox to 2
-        window.handleSportLimit = function(cb) {
-            const checked = document.querySelectorAll('.sport-check:checked');
-            if (checked.length > 2) {
-                cb.checked = false;
-                alert('เลือกกีฬารองได้สูงสุด 2 รายการเท่านั้นครับ');
+        // ไดนามิกสร้างช่องกรอกชื่อลูกทีม
+        window.renderTeamInputs = function() {
+            const size = document.getElementById('team-size').value;
+            const container = document.getElementById('team-members-container');
+            container.innerHTML = '';
+            for(let i=1; i<=size; i++) {
+                container.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border border-indigo-100 flex gap-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 font-bold flex items-center justify-center flex-shrink-0">${i}</div>
+                        <input type="text" class="team-member-name w-1/2 text-sm border-b focus:border-indigo-500 outline-none p-1" placeholder="ชื่อ-นามสกุล" ${i===1 ? 'value="'+document.getElementById('fullname').value+'"' : ''} required>
+                        <input type="email" class="team-member-email w-1/2 text-sm border-b focus:border-indigo-500 outline-none p-1" placeholder="อีเมล (สำหรับติดต่อ)" ${i===1 ? 'value="'+currentUserEmail+'"' : ''} required>
+                    </div>
+                `;
             }
         };
 
-        window.updateSummary = function() {
+        // สร้างตัวเลือกกีฬารอง (Radio ให้เลือกอันเดียว)
+        window.renderMinorSportRadios = function() {
+            const container = document.getElementById('sport-radio-container');
+            container.innerHTML = '';
+
+            for (const [sport, data] of Object.entries(minorSportsData)) {
+                const totalQuota = data.quota * 4; // สมมติ 4 สี
+                const isFull = totalQuota - data.registered <= 0;
+                
+                container.innerHTML += `
+                    <label class="flex items-center gap-3 p-3 border rounded-xl bg-white ${isFull ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[var(--primary)]'} transition-colors">
+                        <input type="radio" name="minor_sport_choice" value="${sport}" class="w-5 h-5 accent-[var(--primary)]" ${isFull ? 'disabled' : ''}>
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-800">${sport}</p>
+                        </div>
+                        <span class="text-xs font-bold ${isFull ? 'text-red-500 bg-red-50 px-2 py-1 rounded' : 'text-green-600 bg-green-50 px-2 py-1 rounded'}">
+                            ${isFull ? 'เต็มแล้ว' : `ว่าง ${totalQuota - data.registered} ที่`}
+                        </span>
+                    </label>
+                `;
+            }
+        };
+
+        window.updateFormSummary = function() {
+            const cardId = document.getElementById('ticket-id').value;
+            const data = ticketsData[cardId];
+            if(!data) return;
+
             let total = 0;
-            if (currentFormType === 'spectator') {
-                const pkg = document.querySelector('input[name="spec_package"]:checked').value;
-                total = pkg === 'normal' 
-                    ? (isEarlyBird ? currentPrices.spec_norm_early : currentPrices.spec_norm_reg)
-                    : (isEarlyBird ? currentPrices.spec_up_early : currentPrices.spec_up_reg);
-            } else if (currentFormType === 'athlete') {
-                total = currentPrices.athlete;
-            } else if (currentFormType === 'photo') {
-                total = currentPrices.photo;
+            if (currentFormType === 'spectator' && data.has_upgrade) {
+                const selected = document.querySelector('input[name="spec_package"]:checked')?.value || 'normal';
+                if(selected === 'normal') total = isEarlyBird ? data.price_early : data.price_reg;
+                else total = isEarlyBird ? data.price_up_early : data.price_up_reg;
+            } else {
+                total = isEarlyBird ? data.price_early : data.price_reg;
             }
             document.getElementById('total-price').innerText = total + "฿";
         };
 
-        // --- Save Admin Settings ---
-        document.getElementById('btn-save-admin').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-save-admin');
-            btn.innerText = "Saving...";
-            
-            try {
-                // Save Prices
-                await updateDoc(doc(db, 'settings', 'ticketing'), {
-                    early_bird_deadline: document.getElementById('admin-early-deadline').value,
-                    "prices.spec_norm_early": Number(document.getElementById('admin-p-spec-norm-early').value),
-                    "prices.spec_norm_reg": Number(document.getElementById('admin-p-spec-norm-reg').value),
-                    "prices.spec_up_early": Number(document.getElementById('admin-p-spec-up-early').value),
-                    "prices.spec_up_reg": Number(document.getElementById('admin-p-spec-up-reg').value),
-                    "prices.athlete": Number(document.getElementById('admin-p-ath').value),
-                    "prices.photo": Number(document.getElementById('admin-p-photo').value)
-                });
 
-                // Save Quotas
-                await setDoc(doc(db, 'inventory', 'sports'), {
-                    'แบดมินตัน': { quota: Number(document.getElementById('q-badminton').value) },
-                    'ปิงปอง': { quota: Number(document.getElementById('q-pingpong').value) },
-                    'แชร์บอล': { quota: Number(document.getElementById('q-chairball').value) }
-                }, { merge: true });
-
-                alert('อัปเดตการตั้งค่าสำเร็จ');
-            } catch (e) {
-                console.error(e);
-                alert('Error Saving');
-            } finally {
-                btn.innerText = "บันทึกการตั้งค่า";
-                document.getElementById('admin-panel').classList.add('translate-x-full');
-            }
-        });
-
-        // --- Submit Registration ---
+        // --- Submit การสมัคร ---
         document.getElementById('btn-submit-form').addEventListener('click', async () => {
-            if(!document.getElementById('fullname').value || !document.getElementById('phone').value) {
-                alert("กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน");
-                return;
+            // Validation
+            const name = document.getElementById('fullname').value;
+            const phone = document.getElementById('phone').value;
+            if(!name || !phone) return alert("กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน");
+
+            // ระบบ Blacklist (แบนเนียนๆ)
+            const isBlacklisted = masterSettings.blacklist.some(item => 
+                name.toLowerCase().includes(item.toLowerCase()) || 
+                currentUserEmail.toLowerCase().includes(item.toLowerCase())
+            );
+
+            if (isBlacklisted) {
+                // หลอกว่ากดส่งข้อมูล แต่เด้ง Error โดยไม่ต้องเอาข้อมูลลง DB
+                closeForm();
+                setTimeout(() => alert("ขออภัย ทำรายการไม่สำเร็จชั่วคราว กรุณาลองใหม่ในภายหลัง"), 500);
+                return; 
             }
 
-            // ในระบบจริงตรงนี้จะเชื่อมไป Gateway จ่ายเงิน
-            alert("ระบบจะนำท่านไปสู่หน้าชำระเงิน (จำลอง)");
-
-            // บันทึกข้อมูลเข้า Profile User
-            const userData = {
-                fullname: document.getElementById('fullname').value,
-                phone: document.getElementById('phone').value,
-                ticket_type: currentFormType,
-                updated_at: new Date()
+            // รวบรวมข้อมูล
+            const ticketId = document.getElementById('ticket-id').value;
+            const tData = ticketsData[ticketId];
+            
+            const payload = {
+                uid: currentUserId,
+                email: currentUserEmail,
+                fullname: name,
+                phone: phone,
+                ticket_category: currentFormType,
+                ticket_title: tData.title,
+                created_at: new Date()
             };
 
+            // ดึงฟอร์มสุขภาพ
             if (currentFormType !== 'photo') {
-                userData.gender = document.getElementById('gender').value;
-                userData.height = document.getElementById('height').value;
-                userData.health = {
+                payload.gender = document.getElementById('gender').value;
+                payload.height = document.getElementById('height').value;
+                payload.health = {
                     disease: document.getElementById('disease').value,
                     allergy_food: document.getElementById('allergy_food').value,
                     allergy_drug: document.getElementById('allergy_drug').value,
@@ -649,31 +772,199 @@
                 };
             }
 
-            if (currentFormType === 'spectator') {
-                userData.ticket_package = document.querySelector('input[name="spec_package"]:checked').value;
+            // ข้อมูลเฉพาะประเภท
+            if (currentFormType === 'main_sport') {
+                const members = [];
+                const names = document.querySelectorAll('.team-member-name');
+                const emails = document.querySelectorAll('.team-member-email');
+                for(let i=0; i<names.length; i++) {
+                    if(names[i].value) members.push({ name: names[i].value, email: emails[i].value });
+                }
+                payload.team_members = members;
+                payload.status = 'pending_review'; // รอคัดเลือก
+            } 
+            else if (currentFormType === 'minor_sport') {
+                const choice = document.querySelector('input[name="minor_sport_choice"]:checked');
+                if(!choice) return alert("กรุณาเลือกกีฬารองที่ต้องการสมัคร 1 รายการ");
+                payload.selected_sport = choice.value;
+                payload.status = 'awaiting_payment';
             }
-
-            if (currentFormType === 'athlete') {
-                const selectedSports = Array.from(document.querySelectorAll('.sport-check:checked')).map(cb => cb.value);
-                userData.registered_sports = selectedSports;
-                
-                // ตัดโควต้ากีฬาใน DB
-                selectedSports.forEach(sport => {
-                    updateDoc(doc(db, 'inventory', 'sports'), {
-                        [`${sport}.registered`]: increment(1)
-                    });
-                });
+            else if (currentFormType === 'spectator' && tData.has_upgrade) {
+                payload.package = document.querySelector('input[name="spec_package"]:checked').value;
+                payload.status = 'awaiting_payment';
+            }
+            else {
+                payload.status = 'awaiting_payment';
             }
 
             try {
-                await setDoc(doc(db, 'users', currentUserId), userData, { merge: true });
-                // ส่งกลับไปหน้า index เพื่อรับหมวกคัดสรร (สุ่มสี)
-                window.location.href = "index.html";
+                // บันทึกลงคอลเลคชั่น orders หรือ registrations
+                const orderId = 'ORD-' + Date.now();
+                await setDoc(doc(db, 'registrations', orderId), payload);
+
+                // ถ้าเป็นกีฬารอง ต้องตัดโควต้าทันที
+                if (currentFormType === 'minor_sport') {
+                    await updateDoc(doc(db, 'settings', 'minor_sports'), {
+                        [`${payload.selected_sport}.registered`]: increment(1)
+                    });
+                }
+
+                closeForm();
+                
+                if (currentFormType === 'main_sport') {
+                    alert("ส่งใบสมัครเรียบร้อยแล้ว ทีมงานจะทำการคัดเลือกและติดต่อกลับผ่านอีเมลของท่าน");
+                } else {
+                    alert("บันทึกข้อมูลเบื้องต้นสำเร็จ! (ระบบจะพาไปหน้าชำระเงินและสุ่มสีต่อไป)");
+                    // ในอนาคต Redirect ไปหน้า Payment Gateway
+                }
+
             } catch (e) {
-                alert("เกิดข้อผิดพลาดในการลงทะเบียน");
                 console.error(e);
+                alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
             }
         });
+
+
+        // ==========================================
+        // 4. Admin Tools: Card Editor & Master Settings
+        // ==========================================
+        
+        // --- 4.1 Card Editor ---
+        window.openAdminCardEditor = function(cardId) {
+            const data = ticketsData[cardId];
+            if(!data) return;
+
+            document.getElementById('edit-card-id').value = cardId;
+            document.getElementById('edit-card-tag').value = data.tag;
+            document.getElementById('edit-card-title').value = data.title;
+            document.getElementById('edit-card-desc').value = data.desc;
+            document.getElementById('edit-card-benefits').value = data.benefits;
+            
+            document.getElementById('edit-card-price-reg').value = data.price_reg;
+            document.getElementById('edit-card-price-early').value = data.price_early;
+
+            if (data.has_upgrade) {
+                document.getElementById('edit-upgrade-pricing').classList.remove('hidden');
+                document.getElementById('edit-card-price-up-reg').value = data.price_up_reg;
+                document.getElementById('edit-card-price-up-early').value = data.price_up_early;
+            } else {
+                document.getElementById('edit-upgrade-pricing').classList.add('hidden');
+            }
+
+            const modal = document.getElementById('admin-card-modal');
+            const content = document.getElementById('admin-card-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        };
+
+        window.closeAdminCardModal = function() {
+            const modal = document.getElementById('admin-card-modal');
+            const content = document.getElementById('admin-card-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        };
+
+        window.saveCardEdits = async function() {
+            const cardId = document.getElementById('edit-card-id').value;
+            const data = ticketsData[cardId];
+            
+            const updates = {
+                [`${cardId}.tag`]: document.getElementById('edit-card-tag').value,
+                [`${cardId}.title`]: document.getElementById('edit-card-title').value,
+                [`${cardId}.desc`]: document.getElementById('edit-card-desc').value,
+                [`${cardId}.benefits`]: document.getElementById('edit-card-benefits').value,
+                [`${cardId}.price_reg`]: Number(document.getElementById('edit-card-price-reg').value),
+                [`${cardId}.price_early`]: Number(document.getElementById('edit-card-price-early').value),
+            };
+
+            if (data.has_upgrade) {
+                updates[`${cardId}.price_up_reg`] = Number(document.getElementById('edit-card-price-up-reg').value);
+                updates[`${cardId}.price_up_early`] = Number(document.getElementById('edit-card-price-up-early').value);
+            }
+
+            try {
+                await updateDoc(doc(db, 'settings', 'tickets'), updates);
+                closeAdminCardModal();
+            } catch (e) { alert("Save failed"); console.error(e); }
+        };
+
+        // --- 4.2 Master Settings (Minor Sports List) ---
+        window.renderAdminMinorSportsList = function() {
+            const container = document.getElementById('admin-minor-sports-list');
+            container.innerHTML = '';
+
+            for (const [sport, data] of Object.entries(minorSportsData)) {
+                container.innerHTML += `
+                    <div class="flex gap-2 items-center bg-slate-50 p-2 rounded border border-slate-200" id="row-sport-${sport}">
+                        <input type="text" value="${sport}" class="admin-sport-name flex-1 border p-1 rounded text-sm bg-white" placeholder="ชื่อกีฬา">
+                        <input type="number" value="${data.quota}" class="admin-sport-quota w-16 border p-1 rounded text-sm text-center" title="โควต้าต่อสี">
+                        <button onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+                    </div>
+                `;
+            }
+        };
+
+        window.addMinorSportRow = function() {
+            const container = document.getElementById('admin-minor-sports-list');
+            const newId = Date.now();
+            container.innerHTML += `
+                <div class="flex gap-2 items-center bg-yellow-50 p-2 rounded border border-yellow-200" id="row-sport-${newId}">
+                    <input type="text" class="admin-sport-name flex-1 border p-1 rounded text-sm bg-white focus:border-yellow-400" placeholder="ชื่อกีฬาใหม่">
+                    <input type="number" value="10" class="admin-sport-quota w-16 border p-1 rounded text-sm text-center focus:border-yellow-400">
+                    <button onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-50 p-1 rounded">🗑️</button>
+                </div>
+            `;
+        };
+
+        // --- 4.3 Save Master Settings ---
+        document.getElementById('btn-admin-master').addEventListener('click', () => {
+            document.getElementById('admin-master-panel').classList.remove('translate-x-full');
+        });
+
+        document.getElementById('btn-save-master').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save-master');
+            btn.innerText = "กำลังอัปเดตระบบ...";
+
+            try {
+                // 1. เซฟการตั้งค่าหลัก (เปิดปิดกีฬาหลัก, วันหมดเขต, Blacklist)
+                const blacklistText = document.getElementById('admin-blacklist').value;
+                const blacklistArr = blacklistText.split('\n').map(t => t.trim()).filter(t => t !== "");
+
+                await setDoc(doc(db, 'settings', 'master'), {
+                    main_sport_open: document.getElementById('admin-main-sport-status').checked,
+                    early_bird_deadline: document.getElementById('admin-early-deadline').value,
+                    blacklist: blacklistArr
+                }, { merge: true });
+
+                // 2. เซฟรายชื่อกีฬารอง โควต้าใหม่
+                const newSportsData = {};
+                const names = document.querySelectorAll('.admin-sport-name');
+                const quotas = document.querySelectorAll('.admin-sport-quota');
+                
+                names.forEach((input, index) => {
+                    const sName = input.value.trim();
+                    if(sName) {
+                        // เก็บค่า registered เดิมไว้ถ้ามี
+                        const oldReg = minorSportsData[sName]?.registered || 0;
+                        newSportsData[sName] = { quota: Number(quotas[index].value), registered: oldReg };
+                    }
+                });
+
+                // เขียนทับ Object เดิมใน Firestore
+                await setDoc(doc(db, 'settings', 'minor_sports'), newSportsData);
+
+                alert("อัปเดตระบบ Master เรียบร้อยแล้ว");
+            } catch (e) {
+                alert("เกิดข้อผิดพลาด");
+                console.error(e);
+            } finally {
+                btn.innerText = "บันทึกการตั้งค่าระบบ";
+                document.getElementById('admin-master-panel').classList.add('translate-x-full');
+            }
+        });
+
     </script>
 </body>
 </html>

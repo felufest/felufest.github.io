@@ -3,599 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeluFest #1 - Activity Hub</title>
+    <title>Event Activity Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Mitr:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Mitr:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- ======================================================== -->
+    <!-- ⚙️ CONTROL PANEL (ตั้งค่าทุกอย่างของเว็บไซต์ได้ที่นี่!) -->
+    <!-- ======================================================== -->
+    <script>
+        const EVENT_CONFIG = {
+            // 1. โหมดของเว็บไซต์ (active = เปิดใช้งานปกติ, coming_soon = ปิดปรับปรุง/รองานปีหน้า)
+            app: {
+                mode: "active", // เปลี่ยนเป็น "coming_soon" เพื่อซ่อนเว็บ
+                comingSoonText: "แล้วพบกันใหม่ในซีซั่นต่อไป!",
+            },
+
+            // 2. ข้อมูลแบรนดิ้งและรูปภาพ
+            branding: {
+                eventName: "FeluFest #1",
+                slogan: "",
+                logoUrl: "https://i.ibb.co/JFy3YHT8/logofelufest1.png", // โลโก้งาน
+                heroBannerUrl: "https://images.unsplash.com/photo-1540039155732-6761b54cbaca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80", // รูปแบนเนอร์หน้าแรก
+                mapImageUrl: "https://via.placeholder.com/1200x600?text=Event+Map+Here", // รูปแผนที่งาน (หรือจะใช้ผังที่นั่งก็ได้)
+            },
+
+            // 3. ธีมสี (เปลี่ยนโค้ดสีตรงนี้ เว็บจะเปลี่ยนสีทันที 0 วิ)
+            colors: {
+                primary: "#f59e0b",      // สีหลัก (เช่น สีปุ่ม, สีไฮไลท์)
+                primaryHover: "#d97706", // สีเวลาเอาเมาส์ชี้ปุ่ม
+                bgColor: "#f8fafc",      // สีพื้นหลังเว็บ (สว่างๆ)
+                cardBg: "#ffffff",       // สีพื้นหลังของการ์ด
+                textColor: "#1e293b"     // สีตัวอักษรหลัก
+            },
+
+            // 4. นับถอยหลัง (Countdown) - แจ้งเตือนสาธารณะ
+            countdown: {
+                show: true, // true = โชว์, false = ซ่อน
+                label: "ปิดรับสมัคร Early Bird ในอีก",
+                targetDate: "2026-10-15T23:59:59" 
+            },
+
+            // 5. ประเภทบัตรเข้างาน (ปรับเปลี่ยนราคา/สิทธิประโยชน์ได้เลย)
+            tickets: [
+                {
+                    id: "spectator", tag: "Best for Fans", title: "Spectator (ผู้ชม)",
+                    desc: "บัตรเข้าชมงานสำหรับสายเชียร์ พร้อมระบบสุ่มสีประจำตัว (House Sorting)",
+                    price: "490฿ / 590฿", 
+                    benefits: ["✅ สุ่มสีประจำตัว (หมวกคัดสรร)", "✅ Wristband ประจำสี", "✅ เข้าชมได้ทุกรายการ", "❌ บริการที่จอดรถ VIP"]
+                },
+                {
+                    id: "minor_sport", tag: "Limited", title: "นักกีฬารอง (เดี่ยว)",
+                    desc: "ลงแข่งเดี่ยว โควต้าจำกัด เลือกได้เพียง 1 รายการเท่านั้น",
+                    price: "690฿", 
+                    benefits: ["✅ สิทธิ์แข่งขันกีฬา 1 รายการ", "✅ เข้าใช้ Athlete's Room", "✅ สุ่มสีประจำตัว"]
+                },
+                {
+                    id: "main_sport", tag: "Team Event", title: "กีฬาหลัก (ทีม)",
+                    desc: "สมัครในรูปแบบทีม (เช่น แชร์บอล) ต้องรอกรรมการคัดเลือกผ่านอีเมล",
+                    price: "แจ้งภายหลัง", 
+                    benefits: ["✅ สิทธิ์แข่งขันกีฬาหลัก", "✅ เข้าใช้ Athlete's Room", "✅ เสื้อแข่งประจำทีม"]
+                },
+                {
+                    id: "photo", tag: "Special", title: "Photographer",
+                    desc: "บัตรช่างภาพ ถ่ายรูปได้อิสระทั่วงาน พร้อมโซนพิเศษชั้น 2",
+                    price: "990฿", 
+                    benefits: ["✅ พื้นที่ถ่ายทำชั้น 2", "✅ ป้ายห้อย Photographer Pass", "✅ ที่จอดรถ VIP"]
+                }
+            ],
+
+            // 6. ไทม์ไลน์ (Timeline) แจ้งกำหนดการ
+            timeline: [
+                { date: "10 ก.ค. 2026", title: "เปิดรับสมัครกีฬาหลัก (แบบทีม)", desc: "เปิดรับสมัครทีมแชร์บอล และคัดเลือกผ่านอีเมล" },
+                { date: "1 ส.ค. 2026", title: "เปิดขายบัตร Early Bird", desc: "บัตรผู้ชมทั่วไป, กีฬารอง และตากล้อง ราคาพิเศษ" },
+                { date: "15 ส.ค. 2026", title: "Regular Phase", desc: "เปิดขายบัตรราคาปกติจนกว่าบัตรจะหมด" },
+                { date: "10 ก.ย. 2026", title: "วันเริ่มกิจกรรม FeluFest!", desc: "เจอกันที่สนามแข่ง" }
+            ],
+
+            // 7. แขกรับเชิญ / สปอนเซอร์ (Guests & Sponsors)
+            guests: [
+                { name: "DJ แดงเดือด", role: "Special Guest", image: "https://via.placeholder.com/150" },
+                { name: "วงดนตรีแมวเหมียว", role: "Live Band", image: "https://via.placeholder.com/150" },
+                { name: "Sponsor A", role: "Official Sponsor", image: "https://via.placeholder.com/150" }
+            ],
+
+            // 8. กฎระเบียบ (Rules & FAQ)
+            rules: [
+                "1. ห้ามนำอาหารและเครื่องดื่มจากภายนอกเข้ามาในบริเวณงาน",
+                "2. ตั๋วไม่สามารถโอนสิทธิ์หรือขอคืนเงินได้ในทุกกรณี",
+                "3. สำหรับกีฬา ผู้เข้าแข่งขันต้องเตรียมอุปกรณ์ส่วนตัวมาเองบางชนิด (ติดตามในอีเมล)",
+                "4. เคารพสิทธิและพื้นที่ส่วนบุคคลของผู้ร่วมงานท่านอื่น"
+            ],
+
+            // 9. Firebase Config
+            firebase: {
+                apiKey: "AIzaSyB1_nTNwucSl37tTitbxTP18bSCK5iWlOI",
+                authDomain: "felufest-family.firebaseapp.com",
+                projectId: "felufest-family",
+                storageBucket: "felufest-family.firebasestorage.app",
+                messagingSenderId: "524842246260",
+                appId: "1:524842246260:web:d46534c7dcc27ccb757121"
+            }
+        };
+
+        // --- ระบบ Inject CSS ทันที (ป้องกันจอโหลดกระตุก/เปลี่ยนสี) ---
+        const root = document.documentElement;
+        root.style.setProperty('--primary', EVENT_CONFIG.colors.primary);
+        root.style.setProperty('--primary-hover', EVENT_CONFIG.colors.primaryHover);
+        root.style.setProperty('--bg-color', EVENT_CONFIG.colors.bgColor);
+        root.style.setProperty('--card-bg', EVENT_CONFIG.colors.cardBg);
+        root.style.setProperty('--text-main', EVENT_CONFIG.colors.textColor);
+    </script>
+    <!-- ======================================================== -->
+
     <style>
-        :root {
-            --bg-color: #0f172a; 
-            --card-bg: #1e293b; 
-            --primary: #f59e0b; 
-            --primary-hover: #d97706;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-radius: 24px; 
-        }
-
-        body { 
-            font-family: 'Mitr', sans-serif; 
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            transition: background-color 0.5s ease;
-            overflow-x: hidden;
-        }
-
+        body { font-family: 'Mitr', sans-serif; background-color: var(--bg-color); color: var(--text-main); }
         h1, h2, h3, .font-heading { font-family: 'Fredoka One', cursive; }
-
-        .dynamic-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border: 2px solid rgba(255,255,255,0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .dynamic-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary);
-            border-color: var(--primary);
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: #000;
-            border-radius: calc(var(--border-radius) / 2);
-            transition: all 0.2s;
-        }
+        .dynamic-card { background-color: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .dynamic-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .btn-primary { background-color: var(--primary); color: #fff; border-radius: 12px; font-weight: bold; transition: all 0.2s; }
         .btn-primary:hover { background-color: var(--primary-hover); transform: scale(1.05); }
-
-        .team-red { background: linear-gradient(135deg, #ef4444, #991b1b); }
-        .team-purple { background: linear-gradient(135deg, #a855f7, #6b21a8); }
-        .team-blue { background: linear-gradient(135deg, #3b82f6, #1e40af); }
-        .team-green { background: linear-gradient(135deg, #22c55e, #166534); }
-        .team-none { background: #475569; }
         
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        .floating { animation: float 3s ease-in-out infinite; }
-        
-        #theme-panel {
-            backdrop-filter: blur(10px);
-            background-color: rgba(15, 23, 42, 0.95);
-            border-left: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Modal Background */
-        #ticket-modal {
-            backdrop-filter: blur(5px);
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        
-        /* สุ่มสี Animation */
-        @keyframes colorFlash {
-            0% { color: #ef4444; }
-            25% { color: #a855f7; }
-            50% { color: #3b82f6; }
-            75% { color: #22c55e; }
-            100% { color: #ef4444; }
-        }
-        .text-flashing { animation: colorFlash 0.5s infinite; }
+        /* ตกแต่ง Timeline */
+        .timeline-item::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--primary); opacity: 0.3; }
+        .timeline-item:last-child::before { bottom: auto; height: 100%; }
+        .timeline-dot { position: absolute; left: 11px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative">
+<body class="min-h-screen flex flex-col">
 
-    <!-- แบ็คกราวด์ตกแต่ง -->
-    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-yellow-500/20 rounded-full blur-[100px] pointer-events-none z-[-1]"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none z-[-1]"></div>
-
-    <!-- ส่วนที่ 1: หน้าล็อกอิน -->
-    <div id="login-view" class="flex-1 flex flex-col items-center justify-center p-6 z-10 transition-opacity duration-500">
-        <div class="dynamic-card p-10 max-w-md w-full text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 via-yellow-500 to-orange-500"></div>
-            
-            <!-- ปรับ Logo หน้าล็อกอินให้ Responsive -->
-            <img id="main-logo-login" src="https://i.imgur.com/G53A5aJ.png" alt="FeluFest Logo" class="w-40 md:w-64 lg:w-80 mx-auto mb-6 floating drop-shadow-xl transition-all duration-300">
-            
-            <h1 id="site-title-login" class="text-4xl mb-2 text-white drop-shadow-md">FeluFest #1</h1>
-            <p id="site-slogan-login" class="text-sm text-gray-400 mb-8">You dream it, we fame it</p>
-            
-            <button id="btn-login-google" class="btn-primary w-full py-4 px-6 font-bold text-lg flex items-center justify-center gap-3 shadow-lg">
-                <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)"><path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/><path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/><path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/><path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 41.939 C -8.804 39.819 -11.514 38.739 -14.754 38.739 C -19.444 38.739 -23.494 41.439 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/></g></svg>
-                เข้าสู่ระบบด้วย Google
-            </button>
-        </div>
+    <!-- ========================================================================= -->
+    <!-- 🚨 โหมด Coming Soon (จะโชว์ก็ต่อเมื่อตั้ง mode: "coming_soon" ในตั้งค่า) -->
+    <!-- ========================================================================= -->
+    <div id="coming-soon-view" class="hidden fixed inset-0 z-[200] bg-slate-900 flex-col items-center justify-center text-center p-6">
+        <img id="cs-logo" src="" alt="Logo" class="w-48 mb-8 animate-bounce">
+        <h1 id="cs-title" class="text-5xl font-heading text-white mb-4">Event Title</h1>
+        <p id="cs-text" class="text-xl text-slate-400 font-bold bg-slate-800 px-6 py-2 rounded-full border border-slate-700">Coming Soon Text</p>
     </div>
 
-    <!-- ส่วนที่ 2: Dashboard -->
-    <div id="dashboard-view" class="hidden flex-col min-h-screen relative z-10 w-full max-w-6xl mx-auto p-4 md:p-8">
+    <!-- ========================================================================= -->
+    <!-- 🟢 โหมดปกติ (Active Mode) - หน้า Landing Page -->
+    <!-- ========================================================================= -->
+    <div id="main-active-view" class="flex-col min-h-screen hidden">
         
-        <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 bg-slate-900/50 backdrop-blur-md p-4 md:p-6 rounded-[2rem] border border-slate-700 shadow-xl">
-            <div class="flex items-center gap-4">
-                <!-- ปรับ Logo หน้า Dashboard ให้ Responsive -->
-                <img id="main-logo-dash" src="https://i.imgur.com/G53A5aJ.png" alt="Logo" class="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain transition-all duration-300">
-                <div>
-                    <h1 id="site-title-dash" class="text-2xl md:text-3xl font-heading text-white">FeluFest #1</h1>
-                    <span id="user-role-badge" class="px-2 py-0.5 rounded text-[10px] md:text-xs font-bold bg-slate-700 text-slate-300 uppercase tracking-widest border border-slate-600">กำลังตรวจสอบ Role...</span>
+        <!-- Navbar -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <img id="nav-logo" src="" alt="Logo" class="h-12 w-auto">
+                    <h1 id="nav-title" class="text-xl font-heading text-slate-800 tracking-wide hidden md:block">Title</h1>
                 </div>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <button id="btn-theme-settings" class="hidden p-2 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
-                </button>
-                <button id="btn-logout" class="text-sm font-bold text-slate-400 hover:text-white px-3 py-1 bg-slate-800 rounded-lg">ออก</button>
-                <img id="user-avatar" src="" alt="Profile" class="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-[var(--primary)] shadow-md transition-all duration-300">
+                <div class="flex items-center gap-4">
+                    <a href="#tickets-section" class="text-sm font-bold text-slate-600 hover:text-[var(--primary)] hidden md:block">Tickets</a>
+                    <a href="#timeline-section" class="text-sm font-bold text-slate-600 hover:text-[var(--primary)] hidden md:block">Schedule</a>
+                    <!-- ปุ่มเข้าสู่ระบบ / โปรไฟล์ -->
+                    <div id="auth-container">
+                        <button id="btn-login" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-md transition-all flex items-center gap-2">
+                            เข้าสู่ระบบ (Dashboard)
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <!-- ตั๋วของฉัน -->
-            <div class="dynamic-card p-6 md:col-span-2 relative overflow-hidden flex flex-col justify-center">
-                <div id="team-color-bar" class="absolute top-0 left-0 w-3 h-full team-none transition-all duration-500"></div>
-                <div class="pl-4">
-                    <h2 class="text-slate-400 text-sm font-bold mb-1 uppercase tracking-wider">Welcome Back</h2>
-                    <h3 id="user-display-name" class="text-3xl font-heading text-white mb-4">Name</h3>
-                    
-                    <div class="flex flex-wrap gap-4">
-                        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex-1 min-w-[120px]">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1">ประเภทบัตร</p>
-                            <p id="ticket-status" class="font-bold text-lg text-slate-200">ยังไม่มีบัตร</p>
-                        </div>
-                        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex-1 min-w-[120px]">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1">ทีมสี (House)</p>
-                            <p id="team-status" class="font-bold text-xl text-slate-200 uppercase tracking-wider">รอการสุ่ม</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ปุ่มซื้อตั๋ว / QR Code -->
-            <div class="dynamic-card p-6 flex flex-col items-center justify-center text-center">
-                <div id="buy-ticket-section">
-                    <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
-                    </div>
-                    <h3 class="font-bold text-white mb-2">ยังไม่มีตั๋วเข้าร่วมงาน</h3>
-                    <button id="btn-open-modal" class="btn-primary w-full py-2 font-bold shadow-md">ซื้อตั๋วเข้างาน</button>
-                </div>
+        <!-- Hero Banner & Countdown -->
+        <section class="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center text-center px-4 overflow-hidden">
+            <!-- ภาพพื้นหลัง -->
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center bg-no-repeat z-0" style="filter: brightness(0.4);"></div>
+            
+            <div class="relative z-10 flex flex-col items-center">
+                <img id="hero-logo" src="" class="w-48 md:w-64 mb-6 drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
+                <p id="hero-slogan" class="text-lg md:text-2xl text-slate-300 font-bold mb-8 tracking-widest uppercase"></p>
                 
-                <div id="qr-section" class="hidden flex-col items-center w-full">
-                    <p class="text-sm text-slate-400 font-bold mb-3 uppercase tracking-widest">QR Code สำหรับลงทะเบียน</p>
-                    <div class="bg-white p-2 rounded-xl mb-3">
-                        <div id="qrcode-container" class="w-32 h-32 flex items-center justify-center"></div>
-                    </div>
-                    <button class="w-full py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold rounded-xl transition-all shadow-lg flex justify-center items-center gap-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6081 1.2498-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8745-.617-1.2498a.077.077 0 00-.0788-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.419-2.1569 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z"/></svg>
-                        เข้า Discord สีคุณ
-                    </button>
+                <!-- Countdown -->
+                <div id="countdown-box" class="hidden bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-white shadow-2xl mb-8">
+                    <p id="countdown-label" class="text-sm font-bold text-[var(--primary)] mb-2 uppercase tracking-widest">Countdown</p>
+                    <div id="countdown-timer" class="text-4xl md:text-5xl font-heading tracking-wider">00:00:00:00</div>
                 </div>
+
+                <a href="#tickets-section" class="btn-primary px-10 py-4 text-xl shadow-[0_0_20px_rgba(245,158,11,0.5)]">🔥 ซื้อบัตรเข้างาน 🔥</a>
             </div>
-        </div>
+        </section>
 
-        <h2 class="text-3xl font-heading text-white mb-6 pl-2 border-l-4 border-[var(--primary)]">Activity Hub</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="activity-cards-container">
-            <!-- การ์ดกิจกรรมจะโผล่ตรงนี้ -->
-        </div>
-    </div>
+        <div class="max-w-6xl mx-auto w-full px-4 py-16 space-y-24">
+            
+            <!-- Tickets Section -->
+            <section id="tickets-section">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-heading text-slate-800 mb-2">Ticket Tiers</h2>
+                    <p class="text-slate-500 font-medium">เลือกประเภทตั๋วที่ใช่สำหรับคุณ (ล็อกอินเพื่อซื้อบัตร)</p>
+                </div>
+                <div id="render-tickets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- JS จะดึงข้อมูลจาก Config มาสร้างการ์ดตรงนี้ -->
+                </div>
+            </section>
 
-    <!-- ส่วนที่ 3: Modal ซื้อตั๋ว -->
-    <div id="ticket-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="dynamic-card w-full max-w-lg p-8 relative scale-95 transition-transform duration-300 transform" id="ticket-modal-content">
-            <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
-            <h2 class="text-2xl font-heading text-white mb-2">เลือกประเภทบัตร</h2>
-            <p class="text-slate-400 text-sm mb-6">ระบบจะทำการสุ่มสีประจำตัวให้คุณหลังจากชำระเงิน (ยกเว้นตากล้อง)</p>
-
-            <div class="space-y-4 mb-8">
-                <label class="flex items-center gap-4 p-4 border border-slate-600 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
-                    <input type="radio" name="ticketType" value="Pre-sale (490฿)" class="w-5 h-5 accent-[var(--primary)]" checked>
-                    <div class="flex-1">
-                        <p class="font-bold text-white text-lg">Pre-sale Ticket</p>
-                        <p class="text-xs text-slate-400">สำหรับผู้ร่วมงาน/นักกีฬา/หลีด (สุ่ม 4 สี)</p>
-                    </div>
-                    <span class="font-bold text-[var(--primary)]">490 ฿</span>
-                </label>
-
-                <label class="flex items-center gap-4 p-4 border border-slate-600 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
-                    <input type="radio" name="ticketType" value="Normal (590฿)" class="w-5 h-5 accent-[var(--primary)]">
-                    <div class="flex-1">
-                        <p class="font-bold text-white text-lg">Normal Ticket</p>
-                        <p class="text-xs text-slate-400">สำหรับผู้ร่วมงาน/นักกีฬา/หลีด (สุ่ม 4 สี)</p>
-                    </div>
-                    <span class="font-bold text-[var(--primary)]">590 ฿</span>
-                </label>
-
-                <label class="flex items-center gap-4 p-4 border border-slate-600 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
-                    <input type="radio" name="ticketType" value="Photographer (990฿)" class="w-5 h-5 accent-[var(--primary)]">
-                    <div class="flex-1">
-                        <p class="font-bold text-white text-lg">Photographer Zone</p>
-                        <p class="text-xs text-slate-400">ชั้น 2 ถ่ายรูปอิสระ (ไม่มีสีประจำตัว)</p>
-                    </div>
-                    <span class="font-bold text-[var(--primary)]">990 ฿</span>
-                </label>
-            </div>
-
-            <div id="random-status" class="hidden text-center mb-6">
-                <p class="text-2xl font-bold text-flashing font-heading">กำลังคัดสรรสีของคุณ...</p>
-                <p class="text-slate-400 text-sm mt-2">โปรดรอสักครู่ หมวกคัดสรรกำลังทำงาน</p>
-            </div>
-
-            <button id="btn-confirm-buy" class="btn-primary w-full py-3 font-bold text-lg">ชำระเงิน (จำลอง) & สุ่มสี</button>
-        </div>
-    </div>
-
-    <!-- ส่วนที่ 4: Theme Customizer Panel -->
-    <div id="theme-panel" class="fixed top-0 right-0 w-80 h-full z-[100] transform translate-x-full transition-transform duration-300 p-6 overflow-y-auto shadow-2xl">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-            <h2 class="text-xl font-bold text-white">🎨 ปรับแต่งธีมเว็บ</h2>
-            <button id="close-theme-btn" class="text-slate-400 hover:text-white">✕</button>
-        </div>
-
-        <div class="flex flex-col gap-5">
-            <div>
-                <label class="block text-sm text-slate-300 mb-2">ลิงก์โลโก้ (Image URL)</label>
-                <input type="text" id="setting-logo" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white">
-            </div>
-            <div>
-                <label class="block text-sm text-slate-300 mb-2">ชื่อเว็บไซต์ (Title)</label>
-                <input type="text" id="setting-title" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white">
-            </div>
-            <div>
-                <label class="block text-sm text-slate-300 mb-2">สโลแกน (Slogan)</label>
-                <input type="text" id="setting-slogan" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Timeline & Schedule -->
+            <section id="timeline-section" class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                    <label class="block text-sm text-slate-300 mb-2">สีหลัก (Primary)</label>
-                    <input type="color" id="setting-color-primary" class="w-full h-10 bg-slate-800 border border-slate-600 rounded cursor-pointer">
+                    <h2 class="text-4xl font-heading text-slate-800 mb-6">Event Timeline</h2>
+                    <p class="text-slate-500 mb-8">กำหนดการสำคัญที่คุณไม่ควรพลาด เตรียมตัวให้พร้อม!</p>
+                    <div id="render-timeline" class="relative pl-2">
+                        <!-- JS จะดึงจาก Config มาสร้างตรงนี้ -->
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm text-slate-300 mb-2">สีการ์ด (Card BG)</label>
-                    <input type="color" id="setting-color-card" class="w-full h-10 bg-slate-800 border border-slate-600 rounded cursor-pointer">
+                <div class="bg-slate-100 p-8 rounded-3xl border border-slate-200 text-center flex flex-col justify-center h-full">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">ต้องการรับการแจ้งเตือน?</h3>
+                    <p class="text-sm text-slate-500 mb-6">ล็อกอินเข้าสู่ระบบเพื่อติดตามข่าวสารและดู Dashboard ส่วนตัวของคุณ</p>
+                    <button onclick="document.getElementById('btn-login').click()" class="btn-primary py-3 px-6 mx-auto">เข้าสู่ระบบ / ลงทะเบียน</button>
                 </div>
-            </div>
-            <div>
-                <label class="block text-sm text-slate-300 mb-2">สีพื้นหลังเว็บ (Background)</label>
-                <input type="color" id="setting-color-bg" class="w-full h-10 bg-slate-800 border border-slate-600 rounded cursor-pointer">
-            </div>
-            <div>
-                <label class="block text-sm text-slate-300 mb-2 flex justify-between">
-                    ความมนของกรอบ <span id="radius-val">24px</span>
-                </label>
-                <input type="range" id="setting-radius" min="0" max="40" value="24" class="w-full accent-[var(--primary)]">
-            </div>
+            </section>
 
-            <button id="btn-save-theme" class="btn-primary w-full py-3 mt-4 font-bold">บันทึกธีมลงฐานข้อมูล</button>
-            <p class="text-xs text-slate-500 text-center">ทุกคนที่เข้าเว็บจะเห็นหน้าตาแบบนี้ทันที</p>
+            <!-- Guests & Sponsors -->
+            <section id="guests-section">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-heading text-slate-800 mb-2">Special Guests</h2>
+                    <p class="text-slate-500 font-medium">พบกับแขกรับเชิญสุดพิเศษและผู้สนับสนุนใจดีของเรา</p>
+                </div>
+                <div id="render-guests" class="flex flex-wrap justify-center gap-8">
+                    <!-- JS จะดึงจาก Config มาสร้างตรงนี้ -->
+                </div>
+            </section>
+
+            <!-- Map Section -->
+            <section id="map-section" class="bg-slate-900 rounded-[3rem] p-8 md:p-12 text-center text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-4xl font-heading mb-4">Event Map</h2>
+                    <p class="text-slate-400 mb-8">ผังการจัดงานและจุดสำคัญต่างๆ</p>
+                    <img id="event-map-img" src="" class="w-full max-w-4xl mx-auto rounded-2xl border-4 border-slate-700 shadow-2xl">
+                </div>
+            </section>
+
+            <!-- Rules & FAQ -->
+            <section id="rules-section" class="max-w-3xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-heading text-slate-800 mb-2">Rules & FAQ</h2>
+                    <p class="text-slate-500 font-medium">ข้อกำหนดการเข้าร่วมงาน</p>
+                </div>
+                <div id="render-rules" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 text-sm text-slate-600 font-medium">
+                    <!-- JS จะดึงจาก Config มาสร้างตรงนี้ -->
+                </div>
+            </section>
+
         </div>
+
+        <!-- Footer -->
+        <footer class="bg-slate-900 text-slate-400 py-10 text-center mt-10">
+            <img id="footer-logo" src="" class="w-20 mx-auto mb-4 opacity-50 grayscale">
+            <p class="font-bold">© 2026 <span id="footer-name"></span>. All rights reserved.</p>
+            <p class="text-xs mt-2">Powered by Activity Hub Template</p>
+        </footer>
+
     </div>
 
-    <!-- โหลดไลบรารีสร้าง QR Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <!-- ส่วนที่ 5: JavaScript + Firebase Logic -->
+    <!-- โหลดไลบรารี Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🔥 Firebase Config ของคุณ 🔥
-        const firebaseConfig = {
-            apiKey: "AIzaSyB1_nTNwucSl37tTitbxTP18bSCK5iWlOI",
-            authDomain: "felufest-family.firebaseapp.com",
-            projectId: "felufest-family",
-            storageBucket: "felufest-family.firebasestorage.app",
-            messagingSenderId: "524842246260",
-            appId: "1:524842246260:web:d46534c7dcc27ccb757121",
-            measurementId: "G-447NGTJ7J2"
-        };
+        // =========================================================================
+        // 🚀 THE ENGINE: สคริปต์ที่ทำหน้าที่แปลง Config ให้เป็นหน้าเว็บจริงๆ
+        // =========================================================================
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-
-        const ADMIN_EMAILS = ['felunadreamplace.official@gmail.com']; 
-
-        const loginView = document.getElementById('login-view');
-        const dashboardView = document.getElementById('dashboard-view');
-        const themePanel = document.getElementById('theme-panel');
-        const btnThemeSettings = document.getElementById('btn-theme-settings');
-        
-        let currentUserId = null;
-        let qrcodeInstance = null; 
-        let userUnsubscribe = null; 
-
-        // --- 1. ระบบจัดการธีม (Theme Engine) ---
-        function applyTheme(themeData) {
-            const root = document.documentElement;
-            if(themeData.primary) root.style.setProperty('--primary', themeData.primary);
-            if(themeData.cardBg) root.style.setProperty('--card-bg', themeData.cardBg);
-            if(themeData.bgColor) root.style.setProperty('--bg-color', themeData.bgColor);
-            if(themeData.radius) root.style.setProperty('--border-radius', themeData.radius + 'px');
-
-            if(themeData.logoUrl) {
-                document.getElementById('main-logo-login').src = themeData.logoUrl;
-                document.getElementById('main-logo-dash').src = themeData.logoUrl;
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. จัดการ Mode (Coming Soon vs Active)
+            if (EVENT_CONFIG.app.mode === "coming_soon") {
+                document.getElementById('coming-soon-view').classList.remove('hidden');
+                document.getElementById('coming-soon-view').classList.add('flex');
+                document.getElementById('cs-logo').src = EVENT_CONFIG.branding.logoUrl;
+                document.getElementById('cs-title').innerText = EVENT_CONFIG.branding.eventName;
+                document.getElementById('cs-text').innerText = EVENT_CONFIG.app.comingSoonText;
+                return; // หยุดการทำงานส่วนอื่น
+            } else {
+                document.getElementById('main-active-view').classList.remove('hidden');
+                document.getElementById('main-active-view').classList.add('flex');
             }
-            if(themeData.title) {
-                document.getElementById('site-title-login').innerText = themeData.title;
-                document.getElementById('site-title-dash').innerText = themeData.title;
-                document.title = `${themeData.title} - Activity Hub`;
-            }
-            if(themeData.slogan) {
-                document.getElementById('site-slogan-login').innerText = themeData.slogan;
-            }
-        }
 
-        const themeDocRef = doc(db, 'site_settings', 'theme');
-        onSnapshot(themeDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const themeData = docSnap.data();
-                applyTheme(themeData);
+            // 2. แปะ Branding ลง UI
+            document.title = EVENT_CONFIG.branding.eventName;
+            document.getElementById('nav-logo').src = EVENT_CONFIG.branding.logoUrl;
+            document.getElementById('nav-title').innerText = EVENT_CONFIG.branding.eventName;
+            document.getElementById('hero-logo').src = EVENT_CONFIG.branding.logoUrl;
+            document.getElementById('hero-bg').style.backgroundImage = `url('${EVENT_CONFIG.branding.heroBannerUrl}')`;
+            document.getElementById('hero-slogan').innerText = EVENT_CONFIG.branding.slogan;
+            document.getElementById('event-map-img').src = EVENT_CONFIG.branding.mapImageUrl;
+            document.getElementById('footer-logo').src = EVENT_CONFIG.branding.logoUrl;
+            document.getElementById('footer-name').innerText = EVENT_CONFIG.branding.eventName;
+
+            // 3. จัดการ Countdown
+            if (EVENT_CONFIG.countdown.show) {
+                document.getElementById('countdown-box').classList.remove('hidden');
+                document.getElementById('countdown-label').innerText = EVENT_CONFIG.countdown.label;
                 
-                document.getElementById('setting-logo').value = themeData.logoUrl || '';
-                document.getElementById('setting-title').value = themeData.title || '';
-                document.getElementById('setting-slogan').value = themeData.slogan || '';
-                document.getElementById('setting-color-primary').value = themeData.primary || '#f59e0b';
-                document.getElementById('setting-color-card').value = themeData.cardBg || '#1e293b';
-                document.getElementById('setting-color-bg').value = themeData.bgColor || '#0f172a';
-                document.getElementById('setting-radius').value = themeData.radius || 24;
-                document.getElementById('radius-val').innerText = (themeData.radius || 24) + 'px';
-            }
-        });
-
-        // --- 2. ระบบ Role & Auth ---
-        document.getElementById('btn-login-google').addEventListener('click', async () => {
-            try { await signInWithPopup(auth, provider); } catch (e) { alert("ล็อกอินล้มเหลว"); }
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserId = user.uid;
-                loginView.classList.add('hidden');
-                loginView.classList.remove('flex');
-                dashboardView.classList.remove('hidden');
-                dashboardView.classList.add('flex');
-
-                document.getElementById('user-avatar').src = user.photoURL;
-                document.getElementById('user-display-name').innerText = user.displayName;
-
-                if (ADMIN_EMAILS.includes(user.email)) {
-                    btnThemeSettings.classList.remove('hidden'); 
-                    document.getElementById('user-role-badge').innerText = '🔥 OWNER';
-                    document.getElementById('user-role-badge').classList.replace('bg-slate-700', 'bg-red-600');
-                } else {
-                    document.getElementById('user-role-badge').innerText = 'USER';
-                }
-
-                if(userUnsubscribe) userUnsubscribe();
-                userUnsubscribe = onSnapshot(doc(db, 'users', user.uid), async (docSnap) => {
-                    if (!docSnap.exists()) {
-                        const initData = {
-                            uid: user.uid,
-                            name: user.displayName,
-                            email: user.email,
-                            role: 'ผู้เข้าชม',
-                            ticket_status: 'none',
-                            team_color: 'none'
-                        };
-                        await setDoc(doc(db, 'users', user.uid), initData);
+                const target = new Date(EVENT_CONFIG.countdown.targetDate).getTime();
+                setInterval(() => {
+                    const diff = target - new Date().getTime();
+                    if (diff > 0) {
+                        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((diff % (1000 * 60)) / 1000);
+                        document.getElementById('countdown-timer').innerText = `${d}d ${h}h ${m}m ${s}s`;
                     } else {
-                        const userData = docSnap.data();
-                        updateDashboardUI(userData);
-                        renderActivities(userData);
+                        document.getElementById('countdown-timer').innerText = "IT'S TIME!";
                     }
-                });
-
-            } else {
-                currentUserId = null;
-                if(userUnsubscribe) userUnsubscribe();
-                loginView.classList.remove('hidden');
-                loginView.classList.add('flex');
-                dashboardView.classList.add('hidden');
-                dashboardView.classList.remove('flex');
-            }
-        });
-
-        // --- 3. อัปเดต UI หน้า Dashboard ---
-        function updateDashboardUI(userData) {
-            const ticketEl = document.getElementById('ticket-status');
-            const buySection = document.getElementById('buy-ticket-section');
-            const qrSection = document.getElementById('qr-section');
-            
-            if (userData.ticket_status === 'none') {
-                ticketEl.innerText = "ยังไม่มีตั๋ว";
-                ticketEl.classList.add('text-red-400');
-                ticketEl.classList.remove('text-green-400');
-                buySection.classList.remove('hidden');
-                qrSection.classList.add('hidden');
-                qrSection.classList.remove('flex');
-            } else {
-                ticketEl.innerText = userData.ticket_status; 
-                ticketEl.classList.remove('text-red-400');
-                ticketEl.classList.add('text-green-400');
-                buySection.classList.add('hidden');
-                qrSection.classList.remove('hidden');
-                qrSection.classList.add('flex');
-
-                if (!qrcodeInstance) {
-                    qrcodeInstance = new QRCode(document.getElementById("qrcode-container"), {
-                        text: userData.uid,
-                        width: 128,
-                        height: 128,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff"
-                    });
-                }
+                }, 1000);
             }
 
-            const teamEl = document.getElementById('team-status');
-            const colorBar = document.getElementById('team-color-bar');
-            
-            colorBar.className = "absolute top-0 left-0 w-3 h-full transition-all duration-500";
-            
-            if (userData.team_color !== 'none') {
-                teamEl.innerText = userData.team_color;
-                
-                const colorMap = {
-                    'แดง': 'team-red',
-                    'ม่วง': 'team-purple',
-                    'น้ำเงิน': 'team-blue',
-                    'เขียว': 'team-green',
-                    'Photographer': 'team-none'
-                };
-                
-                const cssClass = colorMap[userData.team_color];
-                if(cssClass) {
-                    colorBar.classList.add(cssClass);
-                    teamEl.style.color = 'white';
-                }
-            } else {
-                teamEl.innerText = "รอการสุ่ม";
-                colorBar.classList.add('team-none');
-            }
-        }
-
-        // --- 4. Mock Data สร้างการ์ดกิจกรรม ---
-        const mockActivities = [
-            { id: 1, title: "สมัครแข่งขัน E-Sports (Valorant)", type: "Esports", forColor: "all", deadline: "2026-09-01T23:59:59" },
-            { id: 2, title: "นัดซ้อมเชียร์ลีดเดอร์ (สีแดง)", type: "Cheer", forColor: "แดง", deadline: "2026-10-15T00:00:00" },
-            { id: 3, title: "สมัครนักกีฬาวอลเลย์บอล (สีน้ำเงิน)", type: "Sports", forColor: "น้ำเงิน", deadline: "2026-11-01T00:00:00" },
-            { id: 4, title: "Boardgame Night", type: "Casual", forColor: "all", deadline: "2026-08-20T20:00:00" }
-        ];
-
-        function renderActivities(userData) {
-            const container = document.getElementById('activity-cards-container');
-            container.innerHTML = ''; 
-
-            const userColor = userData.team_color;
-
-            mockActivities.forEach(act => {
-                if (act.forColor !== 'all' && act.forColor !== userColor && userColor !== 'none') return; 
-
-                const target = new Date(act.deadline).getTime();
-                const now = new Date().getTime();
-                const diff = target - now;
-                
-                let timeStatus = "";
-                let isClosed = false;
-
-                if (diff < 0) {
-                    timeStatus = "ปิดรับสมัครแล้ว";
-                    isClosed = true;
-                } else {
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    timeStatus = `เหลือเวลา ${days} วัน`;
-                }
-
-                const cardHtml = `
+            // 4. วาดการ์ดตั๋ว
+            const ticketContainer = document.getElementById('render-tickets');
+            EVENT_CONFIG.tickets.forEach(ticket => {
+                const benHtml = ticket.benefits.map(b => `<li class="text-xs mb-1 text-slate-600">${b}</li>`).join('');
+                ticketContainer.innerHTML += `
                     <div class="dynamic-card p-6 flex flex-col justify-between h-full">
                         <div>
-                            <span class="px-2 py-1 rounded bg-slate-700/50 text-[10px] uppercase font-bold text-slate-400 border border-slate-600 mb-3 inline-block">${act.type}</span>
-                            <h3 class="font-bold text-lg text-white mb-2 leading-tight">${act.title}</h3>
-                            <p class="text-sm ${isClosed ? 'text-red-400' : 'text-yellow-500'} font-bold flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                ${timeStatus}
-                            </p>
+                            <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider mb-4 inline-block">${ticket.tag}</span>
+                            <h3 class="text-2xl font-heading mb-2 text-slate-800">${ticket.title}</h3>
+                            <p class="text-slate-500 text-xs mb-4">${ticket.desc}</p>
+                            <p class="text-2xl font-heading text-[var(--primary)] mb-6">${ticket.price}</p>
+                            <ul class="mb-6">${benHtml}</ul>
                         </div>
-                        <button class="mt-6 w-full py-2 rounded-lg font-bold transition-all ${isClosed ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'btn-primary shadow-lg shadow-[var(--primary)]/20'}" ${isClosed ? 'disabled' : ''}>
-                            ${isClosed ? 'หมดเวลา' : 'ดูรายละเอียด & สมัคร'}
-                        </button>
+                        <button onclick="handleTicketClick()" class="btn-primary w-full py-3 mt-auto shadow-md">ล็อกอินเพื่อซื้อบัตร</button>
                     </div>
                 `;
-                container.innerHTML += cardHtml;
             });
-        }
 
-        // --- 5. ลอจิก Panel ตั้งค่าธีม ---
-        btnThemeSettings.addEventListener('click', () => themePanel.classList.remove('translate-x-full'));
-        document.getElementById('close-theme-btn').addEventListener('click', () => themePanel.classList.add('translate-x-full'));
-        document.getElementById('setting-radius').addEventListener('input', (e) => document.getElementById('radius-val').innerText = e.target.value + 'px');
+            // 5. วาด Timeline
+            const tlContainer = document.getElementById('render-timeline');
+            EVENT_CONFIG.timeline.forEach(item => {
+                tlContainer.innerHTML += `
+                    <div class="timeline-item relative pl-10 pb-8">
+                        <div class="timeline-dot"></div>
+                        <span class="text-xs font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-1 rounded inline-block mb-1">${item.date}</span>
+                        <h4 class="font-bold text-slate-800 text-lg">${item.title}</h4>
+                        <p class="text-sm text-slate-500">${item.desc}</p>
+                    </div>
+                `;
+            });
 
-        document.getElementById('btn-save-theme').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-save-theme');
-            btn.innerText = "กำลังบันทึก...";
-            
-            try {
-                await setDoc(themeDocRef, {
-                    logoUrl: document.getElementById('setting-logo').value,
-                    title: document.getElementById('setting-title').value,
-                    slogan: document.getElementById('setting-slogan').value,
-                    primary: document.getElementById('setting-color-primary').value,
-                    cardBg: document.getElementById('setting-color-card').value,
-                    bgColor: document.getElementById('setting-color-bg').value,
-                    radius: document.getElementById('setting-radius').value
-                });
-                alert('อัปเดตธีมเว็บสำเร็จ! ผู้ใช้งานทุกคนจะเห็นการเปลี่ยนแปลงนี้');
-            } catch (error) { alert('เกิดข้อผิดพลาดในการเซฟ'); } finally {
-                btn.innerText = "บันทึกธีมลงฐานข้อมูล";
-                themePanel.classList.add('translate-x-full'); 
-            }
-        });
+            // 6. วาดแขกรับเชิญ
+            const guestContainer = document.getElementById('render-guests');
+            EVENT_CONFIG.guests.forEach(guest => {
+                guestContainer.innerHTML += `
+                    <div class="text-center w-32 md:w-40">
+                        <img src="${guest.image}" alt="${guest.name}" class="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full object-cover border-4 border-white shadow-lg mb-3">
+                        <h4 class="font-bold text-slate-800">${guest.name}</h4>
+                        <p class="text-xs text-[var(--primary)] font-bold">${guest.role}</p>
+                    </div>
+                `;
+            });
 
-        // --- 6. ลอจิก Modal ซื้อตั๋ว & สุ่มสี ---
-        const modal = document.getElementById('ticket-modal');
-        const modalContent = document.getElementById('ticket-modal-content');
-        
-        document.getElementById('btn-open-modal').addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            }, 10);
-        });
+            // 7. วาดกฎ
+            const ruleContainer = document.getElementById('render-rules');
+            EVENT_CONFIG.rules.forEach(rule => {
+                ruleContainer.innerHTML += `<p class="flex items-start gap-2"><span>📌</span> <span>${rule}</span></p>`;
+            });
 
-        document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+            // --- ระบบ Firebase Authentication ---
+            const app = initializeApp(EVENT_CONFIG.firebase);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-        function closeModal() {
-            modal.classList.add('opacity-0');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
+            const btnLogin = document.getElementById('btn-login');
+            const authContainer = document.getElementById('auth-container');
 
-        document.getElementById('btn-confirm-buy').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-confirm-buy');
-            const statusDiv = document.getElementById('random-status');
-            const selectedTicket = document.querySelector('input[name="ticketType"]:checked').value;
-            
-            btn.classList.add('hidden'); 
-            statusDiv.classList.remove('hidden'); 
+            btnLogin.addEventListener('click', async () => {
+                try { await signInWithPopup(auth, provider); } 
+                catch (e) { console.error("Login failed", e); }
+            });
 
-            setTimeout(async () => {
-                let assignedColor = 'none';
-                
-                if (!selectedTicket.includes('Photographer')) {
-                    const colors = ['แดง', 'ม่วง', 'น้ำเงิน', 'เขียว'];
-                    assignedColor = colors[Math.floor(Math.random() * colors.length)];
+            // ฟังก์ชันกดปุ่มซื้อตั๋ว
+            window.handleTicketClick = function() {
+                if(!auth.currentUser) {
+                    alert("กรุณาล็อกอินก่อนทำรายการครับ");
+                    btnLogin.click(); // เด้งให้ล็อกอิน
                 } else {
-                    assignedColor = 'Photographer'; 
+                    // ถ้าในอนาคตมีหน้า Dashboard หรือ Ticket.html ก็ให้ย้ายหน้าไปตรงนี้
+                    window.location.href = "tickets.html"; 
                 }
+            };
 
-                try {
-                    await setDoc(doc(db, 'users', currentUserId), {
-                        ticket_status: selectedTicket,
-                        team_color: assignedColor
-                    }, { merge: true });
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // ถ้าล็อกอินแล้ว เปลี่ยนปุ่มเป็นรูปโปรไฟล์และเมนู Dashboard
+                    authContainer.innerHTML = `
+                        <div class="flex items-center gap-3 bg-slate-100 pl-4 pr-1 py-1 rounded-full border border-slate-200 cursor-pointer hover:bg-slate-200 transition" onclick="window.location.href='tickets.html'">
+                            <div class="text-right hidden md:block">
+                                <p class="text-xs font-bold text-slate-800">${user.displayName}</p>
+                                <p class="text-[10px] text-slate-500">ไปที่ Dashboard ➔</p>
+                            </div>
+                            <img src="${user.photoURL}" class="w-10 h-10 rounded-full border-2 border-[var(--primary)]">
+                        </div>
+                        <button onclick="logout()" class="text-xs text-red-500 font-bold ml-2 hover:underline">ออก</button>
+                    `;
                     
-                    alert(`ซื้อตั๋วสำเร็จ! คุณได้อยู่: ทีมสี${assignedColor}`);
-                    closeModal();
-                    
-                    btn.classList.remove('hidden');
-                    statusDiv.classList.add('hidden');
-                } catch (error) {
-                    alert("เกิดข้อผิดพลาดในการบันทึกตั๋ว");
-                    btn.classList.remove('hidden');
-                    statusDiv.classList.add('hidden');
+                    // เปลี่ยนปุ่มบนการ์ดเป็น "ไปหน้าลงทะเบียน"
+                    document.querySelectorAll('#render-tickets button').forEach(btn => {
+                        btn.innerText = "ไปหน้ากรอกฟอร์ม / ลงทะเบียน";
+                    });
+
+                } else {
+                    // กลับเป็นปุ่มเข้าสู่ระบบปกติ
+                    authContainer.innerHTML = `<button id="btn-login" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-md transition-all flex items-center gap-2">เข้าสู่ระบบ</button>`;
+                    document.getElementById('btn-login').addEventListener('click', async () => {
+                        try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); }
+                    });
                 }
-            }, 2500);
+            });
+
+            window.logout = () => signOut(auth);
         });
     </script>
 </body>
